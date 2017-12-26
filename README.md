@@ -1,8 +1,8 @@
 # Sc2AutoObserver
-============
-*Auto observer that can be used within the sc2api.
-*Early alpha. At the moment it moves the camera for one player.
-*Inspired by the SSCAIT-ObserverModule found at https://github.com/Plankton555/SSCAIT-ObserverModule
+
+* Auto observer that can be used within the sc2api.
+* Early alpha. At the moment it moves the camera for one player.
+* Inspired by the SSCAIT-ObserverModule found at https://github.com/Plankton555/SSCAIT-ObserverModule
 
 ### How to use:
 --------
