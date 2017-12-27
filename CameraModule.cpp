@@ -1,5 +1,6 @@
 #include "sc2api/sc2_api.h"
 #include "CameraModule.h"
+#include <iostream>
 
 int TILE_SIZE = 32;
 
@@ -183,7 +184,6 @@ void CameraModule::moveCameraArmy()
 			}
 			nrUnitsNearby++;
 		}
-
 		if (nrUnitsNearby > mostUnitsNearby) {
 			mostUnitsNearby = nrUnitsNearby;
 			bestPos = uPos;
@@ -199,7 +199,7 @@ void CameraModule::moveCameraArmy()
 void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 {
 	int prio = 1;
-	if (!shouldMoveCamera(prio))
+	if (!shouldMoveCamera(prio) || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 	{
 		return;
 	}
@@ -261,7 +261,7 @@ void CameraModule::moveCamera(const sc2::Unit * unit, int priority)
 
 void CameraModule::updateCameraPosition()
 {
-	float moveFactor = 0.1;
+	float moveFactor = 0.1f;
 	if (followUnit && isValidPos(cameraFocusUnit->pos))
 	{
 		cameraFocusPosition = cameraFocusUnit->pos;
@@ -269,13 +269,11 @@ void CameraModule::updateCameraPosition()
 	currentCameraPosition = currentCameraPosition + sc2::Point2D(
 		moveFactor*(cameraFocusPosition.x - currentCameraPosition.x),
 		moveFactor*(cameraFocusPosition.y - currentCameraPosition.y));
-	sc2::Point2D currentMovedPosition = currentCameraPosition;// -sc2::Point2D(scrWidth / 2, scrHeight / 2 - 40); // -40 to account for HUD
+	sc2::Point2D currentMovedPosition = currentCameraPosition;
 
 	if (isValidPos(currentCameraPosition))
 	{
-		
-		const sc2::Point2DI minimapPos = ConvertWorldToMinimap(currentMovedPosition);
-		m_bot.ActionsFeatureLayer()->CameraMove(minimapPos);
+		m_bot.Debug()->DebugMoveCamera(currentMovedPosition);
 	}
 }
 
@@ -450,32 +448,6 @@ const float CameraModule::Dist(const sc2::Unit * A, const sc2::Unit * B) const
 const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 {
 	return std::sqrt(std::pow(A.x - B.x, 2) + std::pow(A.y - B.y, 2));
-}
-
-const sc2::Point2DI CameraModule::ConvertWorldToMinimap(const sc2::Point2D& world) const
-{
-	const sc2::GameInfo game_info = m_bot.Observation()->GetGameInfo();
-	const int image_width = game_info.options.feature_layer.minimap_resolution_x;
-	const int image_height = game_info.options.feature_layer.minimap_resolution_y;
-	const float map_width = (float)game_info.width;
-	const float map_height = (float)game_info.height;
-
-	// Pixels always cover a square amount of world space. The scale is determined
-	// by the largest axis of the map.
-	const float pixel_size = std::max(map_width / image_width, map_height / image_height);
-
-	// Origin of world space is bottom left. Origin of image space is top left.
-	// Upper left corner of the map corresponds to the upper left corner of the upper 
-	// left pixel of the feature layer.
-	const float image_origin_x = 0;
-	const float image_origin_y = map_height;
-	const float image_relative_x = world.x - image_origin_x;
-	const float image_relative_y = image_origin_y - world.y;
-
-	const int image_x = static_cast<int>((image_relative_x / pixel_size));
-	const int image_y = static_cast<int>((image_relative_y / pixel_size));
-
-	return sc2::Point2DI(image_x, image_y);
 }
 
 const sc2::Point2D CameraModule::getPlayerStartLocation() const

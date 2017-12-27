@@ -32,7 +32,6 @@ public:
   const bool isValidPos(const sc2::Point2D pos) const;
   const float Dist(const sc2::Unit * A, const sc2::Unit * B) const;
   const float Dist(const sc2::Point2D A, const sc2::Point2D B) const;
-  const sc2::Point2DI ConvertWorldToMinimap(const sc2::Point2D & world) const;
   const sc2::Point2D getPlayerStartLocation() const;
   void moveCamera(sc2::Point2D pos, int priority);
   void moveCamera(const sc2::Unit * unit, int priority);
