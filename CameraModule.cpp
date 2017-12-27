@@ -18,13 +18,12 @@ CameraModule::CameraModule(sc2::Agent & bot):
 {
 }
 
-void CameraModule::onStart(int screenWidth, int screenHeight)
+void CameraModule::onStart()
 {
-	myStartLocation = getPlayerStartLocation();
-	cameraFocusPosition = myStartLocation;
-	currentCameraPosition = myStartLocation;
-	scrWidth = screenWidth;
-	scrHeight = screenHeight;
+	setPlayerIds();
+	setPlayerStartLocations();
+	cameraFocusPosition = (*m_startLocations.begin()).second;
+	currentCameraPosition = (*m_startLocations.begin()).second;
 }
 
 void CameraModule::onFrame()
@@ -125,12 +124,11 @@ void CameraModule::moveCameraScoutWorker()
 		{
 			continue;
 		}
-		//In the BW code here seems to be a bug. Why use high prio if we are near our base?
-		if (isNearEnemyStartLocation(unit->pos))
+		if (isNearOpponentStartLocation(unit->pos,unit->owner))
 		{
 			moveCamera(unit, highPrio);
 		}
-		else if (!isNearOwnStartLocation(unit->pos))
+		else if (!isNearOwnStartLocation(unit->pos,unit->owner))
 		{
 			moveCamera(unit, lowPrio);
 		}
@@ -146,7 +144,7 @@ void CameraModule::moveCameraDrop() {
 	for (auto & unit : m_bot.Observation()->GetUnits())
 	{
 		if ((unit->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_OVERLORDTRANSPORT || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC || unit->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_WARPPRISM)
-			&& isNearEnemyStartLocation(unit->pos) && unit->cargo_space_taken > 0)
+			&& isNearOpponentStartLocation(unit->pos,unit->owner) && unit->cargo_space_taken > 0)
 		{
 			moveCamera(unit, prio);
 		}
@@ -203,7 +201,7 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 	{
 		return;
 	}
-	else if (unit->alliance==sc2::Unit::Alliance::Self && !IsWorkerType(unit->unit_type))
+	else if (!IsWorkerType(unit->unit_type))
 	{
 		moveCamera(unit, prio);
 	}
@@ -305,41 +303,16 @@ const bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
 	default: return false;
 	}
 }
-bool CameraModule::isNearEnemyBuilding(const sc2::Unit * unit, sc2::Units enemyUnits) const
-{
-	for (auto & enemy:enemyUnits) {
-		if (isBuilding(enemy->unit_type.ToType())
-			&& Dist(unit,enemy) <= TILE_SIZE*20 
-			&& unit->alliance != enemy->alliance)
-		{
-			return true;
-		}
-	}
 
-	return false;
+const bool CameraModule::isNearOpponentStartLocation(sc2::Point2D pos, int player) const
+{
+	return isNearOwnStartLocation(pos, getOpponent(player));
 }
 
-bool CameraModule::isNearEnemyStartLocation(sc2::Point2D pos) {
+const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos, int player) const
+{
 	int distance = 100;
-
-	std::vector<sc2::Point2D> startLocations = m_bot.Observation()->GetGameInfo().enemy_start_locations;
-
-	for (auto & startLocation : startLocations)
-	{
-		// if the start position is not our own home, and the start position is closer than distance
-		if (Dist(pos,startLocation) <= distance)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos) const
-{
-	int distance = 10 * TILE_SIZE; // 10*32
-	return Dist(myStartLocation,pos) <= distance;
+	return Dist(pos, m_startLocations.at(player)) <= distance;
 }
 
 const bool CameraModule::isArmyUnitType(sc2::UNIT_TYPEID type) const
@@ -450,17 +423,61 @@ const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 	return std::sqrt(std::pow(A.x - B.x, 2) + std::pow(A.y - B.y, 2));
 }
 
-const sc2::Point2D CameraModule::getPlayerStartLocation() const
+
+void CameraModule::setPlayerStartLocations()
 {
-	for (auto & unit : m_bot.Observation()->GetUnits(sc2::Unit::Alliance::Self, sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS })))
+	
+	std::vector<sc2::Point2D> startLocations = m_bot.Observation()->GetGameInfo().start_locations;
+	sc2::Units bases = m_bot.Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
+	// If we are not an observer
+	// Assumes 2 player map
+	if (bases.size() == 1)
 	{
-		for (auto & startLocation : m_bot.Observation()->GetGameInfo().start_locations)
+		for (auto & startLocation : startLocations)
 		{
-			if (Dist(unit->pos, startLocation) < 20.0f)
+			if (Dist(bases.front()->pos, startLocation) < 20.0f)
 			{
-				return startLocation;
+				m_startLocations[bases.front()->owner] = startLocation;
+			}
+			else
+			{
+				m_startLocations[getOpponent(bases.front()->owner)] = startLocation;
 			}
 		}
 	}
-	return sc2::Point2D(0.0f, 0.0f);
+	else
+	{
+		for (auto & unit : bases)
+		{
+			for (auto & startLocation : startLocations)
+			{
+				if (Dist(unit->pos, startLocation) < 20.0f)
+				{
+					m_startLocations[unit->owner] = startLocation;
+				}
+			}
+		}
+	}
+}
+
+void CameraModule::setPlayerIds()
+{
+	for (auto & player : m_bot.Observation()->GetGameInfo().player_info)
+	{
+		if (player.player_type != sc2::PlayerType::Observer)
+		{
+			m_playerIDs.push_back(player.player_id);
+		}
+	}
+}
+
+const int CameraModule::getOpponent(int player) const
+{
+	for (auto & i : m_playerIDs)
+	{
+		if (i != player)
+		{
+			return i;
+		}
+	}
 }

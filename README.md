@@ -38,7 +38,7 @@ void sc2::Agent::OnUnitCreated(const sc2::Unit * unit)
 }
 ```
 ---
-4. The camera movement is realized via the debug interface. So the debug command have to be processed.
+4. The camera movement is realized via the debug interface. So the debug commands have to be processed.
 ```c++
 void sc2::Agent::OnStep() 
 {

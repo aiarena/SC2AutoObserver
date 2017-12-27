@@ -4,12 +4,11 @@
 class CameraModule
 {
 private:
-  sc2::Point2D myStartLocation;
   sc2::Agent m_bot;
+  std::vector<int> m_playerIDs;
+  std::map<int,sc2::Point2D> m_startLocations;
 
 public:
-  int scrWidth;
-  int scrHeight;
   int cameraMoveTime;
   int cameraMoveTimeMin;
   uint32_t watchScoutWorkerUntil;
@@ -23,16 +22,18 @@ public:
   bool followUnit;
 
   CameraModule(sc2::Agent & bot);
-  void onStart(int screenWidth=0, int screenHeight=0);
+  void onStart();
   void onFrame();
-  bool isNearEnemyStartLocation(sc2::Point2D pos);
-  const bool isNearOwnStartLocation(const sc2::Point2D pos) const;
+  const bool isNearOpponentStartLocation(sc2::Point2D pos, int player) const;
+  const bool isNearOwnStartLocation(const sc2::Point2D pos, int player) const;
   const bool isArmyUnitType(sc2::UNIT_TYPEID type) const;
   const bool isBuilding(sc2::UNIT_TYPEID type) const;
   const bool isValidPos(const sc2::Point2D pos) const;
   const float Dist(const sc2::Unit * A, const sc2::Unit * B) const;
   const float Dist(const sc2::Point2D A, const sc2::Point2D B) const;
-  const sc2::Point2D getPlayerStartLocation() const;
+  void setPlayerStartLocations();
+  void setPlayerIds();
+  const int getOpponent(int player) const;
   void moveCamera(sc2::Point2D pos, int priority);
   void moveCamera(const sc2::Unit * unit, int priority);
   void moveCameraIsAttacking();
@@ -48,5 +49,4 @@ public:
   const bool isUnderAttack(const sc2::Unit * unit) const;
   const bool isAttacking(const sc2::Unit * unit) const;
   const bool IsWorkerType(const sc2::UNIT_TYPEID type) const;
-  bool isNearEnemyBuilding(const sc2::Unit * unit, sc2::Units enemyUnits) const;
 };
