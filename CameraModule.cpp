@@ -2,7 +2,14 @@
 #include "CameraModule.h"
 #include <iostream>
 
-int TILE_SIZE = 32;
+//Radius to detect groups of army units
+const float armyBlobRadius = 10.0f;
+//Movement speed of camera
+const float moveFactor = 0.1f;
+//Only smooth movemnt when closer as...
+const float cameraJumpThreshold = 30.0f;
+//When is a unit near a start location
+const float nearStartLocationDistance = 50.0f;
 
 CameraModule::CameraModule(sc2::Agent & bot):
 	m_bot(bot), 
@@ -30,7 +37,7 @@ void CameraModule::onFrame()
 {
 	moveCameraFallingNuke();
 	//moveCameraNukeDetect();
-	moveCameraIsUnderAttack();
+	//moveCameraIsUnderAttack();
 	moveCameraIsAttacking();
 	if (m_bot.Observation()->GetGameLoop() <= watchScoutWorkerUntil)
 	{
@@ -44,7 +51,7 @@ void CameraModule::onFrame()
 
 void CameraModule::moveCameraFallingNuke()
 {
-	int prio = 5;
+	const int prio = 5;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -63,7 +70,7 @@ void CameraModule::moveCameraFallingNuke()
 //Not yet implemented
 void CameraModule::moveCameraNukeDetect(const sc2::Point2D target)
 {
-	int prio = 4;
+	const int prio = 4;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -82,7 +89,7 @@ void CameraModule::moveCameraIsUnderAttack()
 		return;
 	}
 
-	for (auto unit : m_bot.Observation()->GetUnits())
+	for (auto & unit : m_bot.Observation()->GetUnits())
 	{
 		if (isUnderAttack(unit))
 		{
@@ -94,13 +101,13 @@ void CameraModule::moveCameraIsUnderAttack()
 
 void CameraModule::moveCameraIsAttacking()
 {
-	int prio = 3;
+	const int prio = 3;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
 	}
 
-	for (auto unit : m_bot.Observation()->GetUnits())
+	for (auto & unit : m_bot.Observation()->GetUnits())
 	{
 		if (isAttacking(unit))
 		{
@@ -111,8 +118,8 @@ void CameraModule::moveCameraIsAttacking()
 
 void CameraModule::moveCameraScoutWorker()
 {
-	int highPrio = 2;
-	int lowPrio = 0;
+	const int highPrio = 2;
+	const int lowPrio = 0;
 	if (!shouldMoveCamera(lowPrio))
 	{
 		return;
@@ -135,8 +142,9 @@ void CameraModule::moveCameraScoutWorker()
 	}
 }
 
-void CameraModule::moveCameraDrop() {
-	int prio = 2;
+void CameraModule::moveCameraDrop()
+{
+	const int prio = 2;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -153,13 +161,12 @@ void CameraModule::moveCameraDrop() {
 
 void CameraModule::moveCameraArmy()
 {
-	int prio = 1;
+	const int prio = 1;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
 	}
 	// Double loop, check if army units are close to each other
-	int radius = 50;
 
 	sc2::Point2D bestPos;
 	const sc2::Unit * bestPosUnit = nullptr;
@@ -176,7 +183,7 @@ void CameraModule::moveCameraArmy()
 		int nrUnitsNearby = 0;
 		for (auto & nearbyUnit : m_bot.Observation()->GetUnits())
 		{
-			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral)
+			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral || Dist(unit->pos,nearbyUnit->pos)>armyBlobRadius)
 			{
 				continue;
 			}
@@ -196,7 +203,7 @@ void CameraModule::moveCameraArmy()
 
 void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 {
-	int prio = 1;
+	const int prio = 1;
 	if (!shouldMoveCamera(prio) || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 	{
 		return;
@@ -207,7 +214,7 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 	}
 }
 
-const bool CameraModule::shouldMoveCamera(int priority) const
+const bool CameraModule::shouldMoveCamera(const int priority) const
 {
 	const int elapsedFrames = m_bot.Observation()->GetGameLoop() - lastMoved;
 	const bool isTimeToMove = elapsedFrames >= cameraMoveTime;
@@ -217,7 +224,7 @@ const bool CameraModule::shouldMoveCamera(int priority) const
 	return isTimeToMove || (isHigherPrio && isTimeToMoveIfHigherPrio);
 }
 
-void CameraModule::moveCamera(sc2::Point2D pos, int priority)
+void CameraModule::moveCamera(const sc2::Point2D pos,const int priority)
 {
 	if (!shouldMoveCamera(priority))
 	{
@@ -254,19 +261,14 @@ void CameraModule::moveCamera(const sc2::Unit * unit, int priority)
 	followUnit = true;
 }
 
-
-
-
 void CameraModule::updateCameraPosition()
 {
-	float moveFactor = 0.1f;
 	if (followUnit && isValidPos(cameraFocusUnit->pos))
 	{
 		cameraFocusPosition = cameraFocusUnit->pos;
 	}
 	//We only do smooth movement, if the focus is nearby.
-	float distance = 30.0f;
-	if (Dist(currentCameraPosition, cameraFocusPosition) > distance)
+	if (Dist(currentCameraPosition, cameraFocusPosition) > cameraJumpThreshold)
 	{
 		currentCameraPosition = cameraFocusPosition;
 	}
@@ -322,7 +324,7 @@ const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 			rangeGround = weapon.range;
 		}
 	}
-	int enemyID = getOpponent(attacker->owner);
+	const int enemyID = getOpponent(attacker->owner);
 	for (auto & unit : m_bot.Observation()->GetUnits())
 	{
 		if (unit->display_type != sc2::Unit::DisplayType::Visible || unit->owner != enemyID || unit->alliance == sc2::Unit::Alliance::Neutral)
@@ -360,18 +362,17 @@ const bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
 	}
 }
 
-const bool CameraModule::isNearOpponentStartLocation(sc2::Point2D pos, int player) const
+const bool CameraModule::isNearOpponentStartLocation(const sc2::Point2D pos,const int player) const
 {
 	return isNearOwnStartLocation(pos, getOpponent(player));
 }
 
-const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos, int player) const
+const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos,const int player) const
 {
-	int distance = 100;
-	return Dist(pos, m_startLocations.at(player)) <= distance;
+	return Dist(pos, m_startLocations.at(player)) < nearStartLocationDistance;
 }
 
-const bool CameraModule::isArmyUnitType(sc2::UNIT_TYPEID type) const
+const bool CameraModule::isArmyUnitType(const sc2::UNIT_TYPEID type) const
 {
 	if (IsWorkerType(type)) { return false; }
 	if (type == sc2::UNIT_TYPEID::ZERG_OVERLORD) { return false; } //Excluded here the overlord transport etc to count them as army unit
@@ -382,7 +383,7 @@ const bool CameraModule::isArmyUnitType(sc2::UNIT_TYPEID type) const
 	return true;
 }
 
-const bool CameraModule::isBuilding(sc2::UNIT_TYPEID type) const
+const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 {
 	switch(type)
 	{
@@ -491,7 +492,7 @@ void CameraModule::setPlayerStartLocations()
 	{
 		for (auto & startLocation : startLocations)
 		{
-			if (Dist(bases.front()->pos, startLocation) < 20.0f)
+			if (Dist(bases.front()->pos, startLocation) < 5.0f)
 			{
 				m_startLocations[bases.front()->owner] = startLocation;
 			}
@@ -507,7 +508,7 @@ void CameraModule::setPlayerStartLocations()
 		{
 			for (auto & startLocation : startLocations)
 			{
-				if (Dist(unit->pos, startLocation) < 20.0f)
+				if (Dist(unit->pos, startLocation) < 5.0f)
 				{
 					m_startLocations[unit->owner] = startLocation;
 				}
@@ -527,7 +528,7 @@ void CameraModule::setPlayerIds()
 	}
 }
 
-const int CameraModule::getOpponent(int player) const
+const int CameraModule::getOpponent(const int player) const
 {
 	for (auto & i : m_playerIDs)
 	{
