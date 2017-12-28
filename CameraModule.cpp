@@ -264,14 +264,21 @@ void CameraModule::updateCameraPosition()
 	{
 		cameraFocusPosition = cameraFocusUnit->pos;
 	}
-	currentCameraPosition = currentCameraPosition + sc2::Point2D(
-		moveFactor*(cameraFocusPosition.x - currentCameraPosition.x),
-		moveFactor*(cameraFocusPosition.y - currentCameraPosition.y));
-	sc2::Point2D currentMovedPosition = currentCameraPosition;
-
+	//We only do smooth movement, if the focus is nearby.
+	float distance = 30.0f;
+	if (Dist(currentCameraPosition, cameraFocusPosition) > distance)
+	{
+		currentCameraPosition = cameraFocusPosition;
+	}
+	else
+	{
+		currentCameraPosition = currentCameraPosition + sc2::Point2D(
+			moveFactor*(cameraFocusPosition.x - currentCameraPosition.x),
+			moveFactor*(cameraFocusPosition.y - currentCameraPosition.y));
+	}
 	if (isValidPos(currentCameraPosition))
 	{
-		m_bot.Debug()->DebugMoveCamera(currentMovedPosition);
+		m_bot.Debug()->DebugMoveCamera(currentCameraPosition);
 	}
 }
 
@@ -283,12 +290,61 @@ const bool CameraModule::isUnderAttack(const sc2::Unit * unit) const
 	return false;
 }
 
-const bool CameraModule::isAttacking(const sc2::Unit * unit) const
+const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 {
+	if (!isArmyUnitType(attacker->unit_type.ToType()) || attacker->display_type != sc2::Unit::DisplayType::Visible || attacker->alliance == sc2::Unit::Alliance::Neutral)
+	{
+		return false;
+	}
 	//Option A
-	return unit->orders.size()>0 && unit->orders.front().ability_id.ToType() == sc2::ABILITY_ID::ATTACK_ATTACK;
+	//return unit->orders.size()>0 && unit->orders.front().ability_id.ToType() == sc2::ABILITY_ID::ATTACK_ATTACK;
 	//Option B
 	//return unit->weapon_cooldown > 0.0f;
+	//Option C 
+	//Not sure if observer can see the "private" fields of player units.
+	//So we just assume: if it is in range and an army unit -> it attacks
+	std::vector<sc2::Weapon> weapons = m_bot.Observation()->GetUnitTypeData()[attacker->unit_type].weapons;
+	float rangeAir = -1.0;
+	float rangeGround = -1.0;
+	for (auto & weapon : weapons)
+	{
+		if (weapon.type == sc2::Weapon::TargetType::Any)
+		{
+			rangeAir = weapon.range;
+			rangeGround = weapon.range;
+		}
+		else if (weapon.type == sc2::Weapon::TargetType::Air)
+		{
+			rangeAir = weapon.range;
+		}
+		else if (weapon.type == sc2::Weapon::TargetType::Ground)
+		{
+			rangeGround = weapon.range;
+		}
+	}
+	int enemyID = getOpponent(attacker->owner);
+	for (auto & unit : m_bot.Observation()->GetUnits())
+	{
+		if (unit->display_type != sc2::Unit::DisplayType::Visible || unit->owner != enemyID || unit->alliance == sc2::Unit::Alliance::Neutral)
+		{
+			continue;
+		}
+		if (unit->is_flying)
+		{
+			if (Dist(attacker->pos, unit->pos) < rangeAir)
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if (Dist(attacker->pos, unit->pos) < rangeGround)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 const bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
@@ -480,4 +536,5 @@ const int CameraModule::getOpponent(int player) const
 			return i;
 		}
 	}
+	return -1;
 }
