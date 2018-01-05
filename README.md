@@ -10,7 +10,7 @@
 
 1. Initialize the camera module with a sc2::Agent
 ```c++
-CameraModuleAgent cameraModuleAgent(sc2::Agent & bot);
+CameraModuleAgent cameraModuleAgent(sc2::Agent * const bot);
 ```
 
 2. Call the onStart and onFrame functions with the onStart and onStep functions of the agent.
@@ -47,7 +47,7 @@ An example of an bot that uses the Sc2AutoObserver can be found here: https://gi
 
 1. Initialize the camera module with a sc2::ReplayObserver
 ```c++
-CameraModuleObserver cameraModuleObserver(sc2::Agent & bot);
+CameraModuleObserver cameraModuleObserver(sc2::Agent * const bot);
 ```
 
 2. Call the onStart and onFrame functions with the onStart and onStep functions of the Observer.

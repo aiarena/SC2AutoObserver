@@ -5,5 +5,4 @@ To build this example the paths of the libs and includes of the sc2api have to b
 `ExampleObserver.exe "C:\Users\D\Documents\StarCraft II\Replays\Multiplayer\Interloper LE (655).SC2Replay"`
 
 ### Known bug:
-* The program crashes on exit.
 * Only the perspective of one player.

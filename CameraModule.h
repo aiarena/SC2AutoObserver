@@ -8,7 +8,7 @@ protected:
 	//Sometimes getObservation fails when starting a game.
 	bool m_initialized;
 
-	sc2::Client m_client;
+	sc2::Client * m_client;
 	std::vector<int> m_playerIDs;
 	std::map<int, sc2::Point2D> m_startLocations;
 
@@ -54,24 +54,26 @@ protected:
 	virtual void updateCameraPositionExcecute() = 0;
 
 public:
-	CameraModule(sc2::Client & client);
+	CameraModule(sc2::Client * const bot);
 	void onStart();
 	void onFrame();
 	void moveCameraUnitCreated(const sc2::Unit * unit);
+
+	~CameraModule();
 };
 
 class CameraModuleObserver : public CameraModule
 {
 private:
-	sc2::ReplayObserver m_observer;
+	sc2::ReplayObserver * const m_observer;
 	void updateCameraPositionExcecute() override;
 public:
-	CameraModuleObserver(sc2::ReplayObserver & observer);
+	CameraModuleObserver(sc2::ReplayObserver * const observer);
 };
 
 class CameraModuleAgent: public CameraModule
 {
 	void updateCameraPositionExcecute() override;
 public:
-	CameraModuleAgent(sc2::Agent & observer);
+	CameraModuleAgent(sc2::Agent * const observer);
 };

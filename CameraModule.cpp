@@ -11,7 +11,7 @@ const float cameraJumpThreshold = 30.0f;
 //When is a unit near a start location
 const float nearStartLocationDistance = 50.0f;
 
-CameraModule::CameraModule(sc2::Client & bot):
+CameraModule::CameraModule(sc2::Client * const bot):
 	m_initialized(false),
 	m_client(bot), 
 	cameraMoveTime(150),
@@ -28,7 +28,7 @@ CameraModule::CameraModule(sc2::Client & bot):
 
 void CameraModule::onStart()
 {
-	if (m_client.Control() && m_client.Control()->GetObservation())
+	if (m_client->Control() && m_client->Control()->GetObservation())
 	{
 		setPlayerIds();
 		setPlayerStartLocations();
@@ -50,7 +50,7 @@ void CameraModule::onFrame()
 	//moveCameraNukeDetect();
 	//moveCameraIsUnderAttack();
 	moveCameraIsAttacking();
-	if (m_client.Observation()->GetGameLoop() <= watchScoutWorkerUntil)
+	if (m_client->Observation()->GetGameLoop() <= watchScoutWorkerUntil)
 	{
 		moveCameraScoutWorker();
 	}
@@ -68,7 +68,7 @@ void CameraModule::moveCameraFallingNuke()
 		return;
 	}
 
-	for(auto & effects: m_client.Observation()->GetEffects())
+	for(auto & effects: m_client->Observation()->GetEffects())
 	{
 		if (effects.effect_id==uint32_t(7)) //7 = NukePersistent NOT TESTED YET
 		{
@@ -100,7 +100,7 @@ void CameraModule::moveCameraIsUnderAttack()
 		return;
 	}
 
-	for (auto & unit : m_client.Observation()->GetUnits())
+	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if (isUnderAttack(unit))
 		{
@@ -118,7 +118,7 @@ void CameraModule::moveCameraIsAttacking()
 		return;
 	}
 
-	for (auto & unit : m_client.Observation()->GetUnits())
+	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if (isAttacking(unit))
 		{
@@ -136,7 +136,7 @@ void CameraModule::moveCameraScoutWorker()
 		return;
 	}
 
-	for (auto & unit : m_client.Observation()->GetUnits())
+	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if (!IsWorkerType(unit->unit_type))
 		{
@@ -160,7 +160,7 @@ void CameraModule::moveCameraDrop()
 	{
 		return;
 	}
-	for (auto & unit : m_client.Observation()->GetUnits())
+	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if ((unit->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_OVERLORDTRANSPORT || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC || unit->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_WARPPRISM)
 			&& isNearOpponentStartLocation(unit->pos,unit->owner) && unit->cargo_space_taken > 0)
@@ -183,7 +183,7 @@ void CameraModule::moveCameraArmy()
 	const sc2::Unit * bestPosUnit = nullptr;
 	int mostUnitsNearby = 0;
 
-	for (auto & unit: m_client.Observation()->GetUnits())
+	for (auto & unit: m_client->Observation()->GetUnits())
 	{
 		if (!isArmyUnitType(unit->unit_type.ToType()) || unit->display_type!=sc2::Unit::DisplayType::Visible || unit->alliance==sc2::Unit::Alliance::Neutral)
 		{
@@ -192,7 +192,7 @@ void CameraModule::moveCameraArmy()
 		sc2::Point2D uPos = unit->pos;
 
 		int nrUnitsNearby = 0;
-		for (auto & nearbyUnit : m_client.Observation()->GetUnits())
+		for (auto & nearbyUnit : m_client->Observation()->GetUnits())
 		{
 			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral || Dist(unit->pos,nearbyUnit->pos)>armyBlobRadius)
 			{
@@ -231,7 +231,7 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 
 const bool CameraModule::shouldMoveCamera(const int priority) const
 {
-	const int elapsedFrames = m_client.Observation()->GetGameLoop() - lastMoved;
+	const int elapsedFrames = m_client->Observation()->GetGameLoop() - lastMoved;
 	const bool isTimeToMove = elapsedFrames >= cameraMoveTime;
 	const bool isTimeToMoveIfHigherPrio = elapsedFrames >= cameraMoveTimeMin;
 	const bool isHigherPrio = lastMovedPriority < priority;
@@ -253,7 +253,7 @@ void CameraModule::moveCamera(const sc2::Point2D pos,const int priority)
 
 	cameraFocusPosition = pos;
 	lastMovedPosition = cameraFocusPosition;
-	lastMoved = m_client.Observation()->GetGameLoop();
+	lastMoved = m_client->Observation()->GetGameLoop();
 	lastMovedPriority = priority;
 	followUnit = false;
 }
@@ -271,7 +271,7 @@ void CameraModule::moveCamera(const sc2::Unit * unit, int priority)
 
 	cameraFocusUnit = unit;
 	lastMovedPosition = cameraFocusUnit->pos;
-	lastMoved = m_client.Observation()->GetGameLoop();
+	lastMoved = m_client->Observation()->GetGameLoop();
 	lastMovedPriority = priority;
 	followUnit = true;
 }
@@ -320,7 +320,7 @@ const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 	//Option C 
 	//Not sure if observer can see the "private" fields of player units.
 	//So we just assume: if it is in range and an army unit -> it attacks
-	std::vector<sc2::Weapon> weapons = m_client.Observation()->GetUnitTypeData()[attacker->unit_type].weapons;
+	std::vector<sc2::Weapon> weapons = m_client->Observation()->GetUnitTypeData()[attacker->unit_type].weapons;
 	float rangeAir = -1.0;
 	float rangeGround = -1.0;
 	for (auto & weapon : weapons)
@@ -340,7 +340,7 @@ const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 		}
 	}
 	const int enemyID = getOpponent(attacker->owner);
-	for (auto & unit : m_client.Observation()->GetUnits())
+	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if (unit->display_type != sc2::Unit::DisplayType::Visible || unit->owner != enemyID || unit->alliance == sc2::Unit::Alliance::Neutral)
 		{
@@ -482,7 +482,7 @@ const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 const bool CameraModule::isValidPos(const sc2::Point2D pos) const
 {
 	//Maybe playable width/height?
-	return pos.x >= 0 && pos.y >= 0 && pos.x < m_client.Observation()->GetGameInfo().width && pos.y < m_client.Observation()->GetGameInfo().height;
+	return pos.x >= 0 && pos.y >= 0 && pos.x < m_client->Observation()->GetGameInfo().width && pos.y < m_client->Observation()->GetGameInfo().height;
 }
 
 const float CameraModule::Dist(const sc2::Unit * A, const sc2::Unit * B) const
@@ -499,8 +499,8 @@ const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 void CameraModule::setPlayerStartLocations()
 {
 	
-	std::vector<sc2::Point2D> startLocations = m_client.Observation()->GetGameInfo().start_locations;
-	sc2::Units bases = m_client.Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
+	std::vector<sc2::Point2D> startLocations = m_client->Observation()->GetGameInfo().start_locations;
+	sc2::Units bases = m_client->Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
 	// If we are not an observer
 	// Assumes 2 player map
 	if (bases.size() == 1)
@@ -534,7 +534,7 @@ void CameraModule::setPlayerStartLocations()
 
 void CameraModule::setPlayerIds()
 {
-	for (auto & player : m_client.Observation()->GetGameInfo().player_info)
+	for (auto & player : m_client->Observation()->GetGameInfo().player_info)
 	{
 		if (player.player_type != sc2::PlayerType::Observer)
 		{
@@ -555,25 +555,27 @@ const int CameraModule::getOpponent(const int player) const
 	return -1;
 }
 
-
-
-
-///////////////////////// For observers
-CameraModuleObserver::CameraModuleObserver(sc2::ReplayObserver & observer):CameraModule(observer),m_observer(observer)
+CameraModule::~CameraModule()
 {
 
 }
 
 
+///////////////////////// For observers
+CameraModuleObserver::CameraModuleObserver(sc2::ReplayObserver * const observer):CameraModule(observer),m_observer(observer)
+{
+
+}
+
 void CameraModuleObserver::updateCameraPositionExcecute()
 {
-	m_observer.ObserverAction()->CameraMove(currentCameraPosition);
+	m_observer->ObserverAction()->CameraMove(currentCameraPosition);
 }
 
 
 
 ///////////////////////// For agents
-CameraModuleAgent::CameraModuleAgent(sc2::Agent & agent):CameraModule(agent)
+CameraModuleAgent::CameraModuleAgent(sc2::Agent * const agent):CameraModule(agent)
 {
 
 }
@@ -581,6 +583,6 @@ CameraModuleAgent::CameraModuleAgent(sc2::Agent & agent):CameraModule(agent)
 
 void CameraModuleAgent::updateCameraPositionExcecute()
 {
-	m_client.Debug()->DebugMoveCamera(currentCameraPosition);
-	m_client.Debug()->SendDebug();
+	m_client->Debug()->DebugMoveCamera(currentCameraPosition);
+	m_client->Debug()->SendDebug();
 }
