@@ -7,7 +7,7 @@
 * Inspired by the SSCAIT-ObserverModule found at https://github.com/Plankton555/SSCAIT-ObserverModule
 
 ### How to use with sc2::Agent:
----
+
 1. Initialize the camera module with a sc2::Agent
 ```c++
 CameraModuleAgent cameraModuleAgent(sc2::Agent & bot);
@@ -44,6 +44,7 @@ Please be aware that the camera movement is realized via the debug interface. So
 An example of an bot that uses the Sc2AutoObserver can be found here: https://github.com/Archiatrus/5minBot
 
 ### How to use with sc2::ReplayObserver
+
 1. Initialize the camera module with a sc2::ReplayObserver
 ```c++
 CameraModuleObserver cameraModuleObserver(sc2::Agent & bot);
