@@ -1,5 +1,6 @@
 #include "sc2api/sc2_api.h"
 #include "CameraModule.h"
+#include "sc2api/sc2_proto_interface.h"
 #include <iostream>
 
 //Radius to detect groups of army units
@@ -283,15 +284,20 @@ void CameraModule::updateCameraPosition()
 		cameraFocusPosition = cameraFocusUnit->pos;
 	}
 	//We only do smooth movement, if the focus is nearby.
-	if (Dist(currentCameraPosition, cameraFocusPosition) > cameraJumpThreshold)
+	float dist = Dist(currentCameraPosition, cameraFocusPosition);
+	if (dist > cameraJumpThreshold)
 	{
 		currentCameraPosition = cameraFocusPosition;
 	}
-	else
+	else if (dist > 0.1f)
 	{
 		currentCameraPosition = currentCameraPosition + sc2::Point2D(
 			moveFactor*(cameraFocusPosition.x - currentCameraPosition.x),
 			moveFactor*(cameraFocusPosition.y - currentCameraPosition.y));
+	}
+	else
+	{
+		return;
 	}
 	if (isValidPos(currentCameraPosition))
 	{
@@ -583,6 +589,18 @@ CameraModuleAgent::CameraModuleAgent(sc2::Agent * const agent):CameraModule(agen
 
 void CameraModuleAgent::updateCameraPositionExcecute()
 {
-	m_client->Debug()->DebugMoveCamera(currentCameraPosition);
-	m_client->Debug()->SendDebug();
+	sc2::GameRequestPtr camera_request = m_client->Control()->Proto().MakeRequest();
+	SC2APIProtocol::RequestAction* request_action = camera_request->mutable_action();
+	SC2APIProtocol::Action* action = request_action->add_actions();
+	SC2APIProtocol::ActionRaw* action_raw = action->mutable_action_raw();
+	SC2APIProtocol::ActionRawCameraMove* camera_move = action_raw->mutable_camera_move();
+
+	SC2APIProtocol::Point* point = camera_move->mutable_center_world_space();
+	point->set_x(currentCameraPosition.x);
+	point->set_y(currentCameraPosition.y);
+
+	m_client->Control()->Proto().SendRequest(camera_request);
+	m_client->Control()->WaitForResponse();
+	//m_client->Debug()->DebugMoveCamera(currentCameraPosition);
+	//m_client->Debug()->SendDebug();
 }
