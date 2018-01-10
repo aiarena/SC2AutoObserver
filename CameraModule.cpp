@@ -11,6 +11,8 @@ const float moveFactor = 0.1f;
 const float cameraJumpThreshold = 30.0f;
 //When is a unit near a start location
 const float nearStartLocationDistance = 50.0f;
+//Camera distance to map (zoom). 0 means default.
+const float cameraDistance = 50.0f;
 
 CameraModule::CameraModule(sc2::Client * const bot):
 	m_initialized(false),
@@ -573,17 +575,32 @@ CameraModuleObserver::CameraModuleObserver(sc2::ReplayObserver * const observer)
 
 }
 
+void CameraModuleObserver::onStart()
+{
+	//This should work once it is implemented on the proto side.
+	sc2::GameRequestPtr request = m_observer->Control()->Proto().MakeRequest();
+	SC2APIProtocol::RequestObserverAction* obsRequest = request->mutable_obs_action();
+	SC2APIProtocol::ObserverAction* action = obsRequest->add_actions();
+	SC2APIProtocol::ActionObserverPlayerPerspective * player_perspective = action->mutable_player_perspective();
+	player_perspective->set_player_id(0);
+	m_client->Control()->Proto().SendRequest(request);
+	m_client->Control()->WaitForResponse();
+	CameraModule::onStart();
+}
+
 void CameraModuleObserver::updateCameraPositionExcecute()
 {
-	m_observer->ObserverAction()->CameraMove(currentCameraPosition);
+	m_observer->ObserverAction()->CameraMove(currentCameraPosition,cameraDistance);
 }
+
+
 
 
 
 ///////////////////////// For agents
 CameraModuleAgent::CameraModuleAgent(sc2::Agent * const agent):CameraModule(agent)
 {
-
+	
 }
 
 

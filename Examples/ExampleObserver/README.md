@@ -5,4 +5,4 @@ To build this example the paths of the libs and includes of the sc2api have to b
 `ExampleObserver.exe "C:\Users\D\Documents\StarCraft II\Replays\Multiplayer\Interloper LE (655).SC2Replay"`
 
 ### Known bug:
-* Only the perspective of one player.
+* Only the perspective of one player. The protobuff request to go to everyone perspective is included, but it is not yet implemented on the protobuff level. That means once Blizzard updates this feature it should work automatically for the autoObserver.

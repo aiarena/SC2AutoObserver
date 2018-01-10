@@ -69,6 +69,7 @@ private:
 	void updateCameraPositionExcecute() override;
 public:
 	CameraModuleObserver(sc2::ReplayObserver * const observer);
+	void onStart();
 };
 
 class CameraModuleAgent: public CameraModule
