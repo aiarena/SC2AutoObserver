@@ -49,6 +49,7 @@ protected:
 	void setPlayerStartLocations();
 	void setPlayerIds();
 	const int getOpponent(const int player) const;
+	const sc2::Point2D getInvertedPos(const sc2::Point2D) const;
 
 	//Depending on whether we have an agent or an observer we need to use different functions to move the camera
 	virtual void updateCameraPositionExcecute() = 0;

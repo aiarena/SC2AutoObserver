@@ -33,6 +33,14 @@ void CameraModule::onStart()
 {
 	if (m_client->Control() && m_client->Control()->GetObservation())
 	{
+		if (lastMoved)
+		{
+			lastMoved = 0;
+			lastMovedPriority = 0;
+			lastMovedPosition = sc2::Point2D(0, 0);
+			cameraFocusUnit = nullptr;
+			followUnit=false;
+		}
 		setPlayerIds();
 		setPlayerStartLocations();
 		cameraFocusPosition = (*m_startLocations.begin()).second;
@@ -49,6 +57,8 @@ void CameraModule::onFrame()
 		onStart();
 		return;
 	}
+	std::vector<sc2::Point2D> startLocations = m_client->Observation()->GetGameInfo().start_locations;
+	std::vector<sc2::Point2D> startLocations2 = m_client->Observation()->GetGameInfo().enemy_start_locations;
 	moveCameraFallingNuke();
 	//moveCameraNukeDetect();
 	//moveCameraIsUnderAttack();
@@ -506,36 +516,21 @@ const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 
 void CameraModule::setPlayerStartLocations()
 {
-	
+	m_startLocations.clear();
 	std::vector<sc2::Point2D> startLocations = m_client->Observation()->GetGameInfo().start_locations;
 	sc2::Units bases = m_client->Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
 	// If we are not an observer
 	// Assumes 2 player map
 	if (bases.size() == 1)
 	{
-		for (auto & startLocation : startLocations)
-		{
-			if (Dist(bases.front()->pos, startLocation) < 5.0f)
-			{
-				m_startLocations[bases.front()->owner] = startLocation;
-			}
-			else
-			{
-				m_startLocations[getOpponent(bases.front()->owner)] = startLocation;
-			}
-		}
+		m_startLocations[bases.front()->owner] = bases.front()->pos;
+		m_startLocations[getOpponent(bases.front()->owner)] = getInvertedPos(bases.front()->pos);
 	}
 	else
 	{
 		for (auto & unit : bases)
 		{
-			for (auto & startLocation : startLocations)
-			{
-				if (Dist(unit->pos, startLocation) < 5.0f)
-				{
-					m_startLocations[unit->owner] = startLocation;
-				}
-			}
+			m_startLocations[unit->owner] = unit->pos;
 		}
 	}
 }
@@ -563,6 +558,11 @@ const int CameraModule::getOpponent(const int player) const
 	return -1;
 }
 
+const sc2::Point2D CameraModule::getInvertedPos(const sc2::Point2D pos) const
+{
+	return sc2::Point2D(m_client->Observation()->GetGameInfo().width - pos.x, m_client->Observation()->GetGameInfo().width - pos.y);
+}
+
 CameraModule::~CameraModule()
 {
 
@@ -582,7 +582,7 @@ void CameraModuleObserver::onStart()
 	SC2APIProtocol::RequestObserverAction* obsRequest = request->mutable_obs_action();
 	SC2APIProtocol::ObserverAction* action = obsRequest->add_actions();
 	SC2APIProtocol::ActionObserverPlayerPerspective * player_perspective = action->mutable_player_perspective();
-	player_perspective->set_player_id(0);
+	player_perspective->set_player_id(0); //0 = everyone
 	m_client->Control()->Proto().SendRequest(request);
 	m_client->Control()->WaitForResponse();
 	CameraModule::onStart();
