@@ -31,7 +31,7 @@ protected:
 	void moveCameraIsUnderAttack();
 	void moveCameraScoutWorker();
 	void moveCameraFallingNuke();
-	void moveCameraNukeDetect(const sc2::Point2D target);
+	void moveCameraNukeDetect();
 	void moveCameraDrop();
 	void moveCameraArmy();
 	void updateCameraPosition();

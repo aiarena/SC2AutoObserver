@@ -57,10 +57,8 @@ void CameraModule::onFrame()
 		onStart();
 		return;
 	}
-	std::vector<sc2::Point2D> startLocations = m_client->Observation()->GetGameInfo().start_locations;
-	std::vector<sc2::Point2D> startLocations2 = m_client->Observation()->GetGameInfo().enemy_start_locations;
 	moveCameraFallingNuke();
-	//moveCameraNukeDetect();
+	moveCameraNukeDetect();
 	//moveCameraIsUnderAttack();
 	moveCameraIsAttacking();
 	if (m_client->Observation()->GetGameLoop() <= watchScoutWorkerUntil)
@@ -75,15 +73,31 @@ void CameraModule::onFrame()
 
 void CameraModule::moveCameraFallingNuke()
 {
+	const int prio = 6;
+	if (!shouldMoveCamera(prio))
+	{
+		return;
+	}
+	for (auto & unit : m_client->Observation()->GetUnits())
+	{
+		if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_NUKE)
+		{
+			moveCamera(unit, prio);
+			return;
+		}
+	}
+}
+
+void CameraModule::moveCameraNukeDetect()
+{
 	const int prio = 5;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
 	}
-
-	for(auto & effects: m_client->Observation()->GetEffects())
+	for (auto & effects : m_client->Observation()->GetEffects())
 	{
-		if (effects.effect_id==uint32_t(7)) //7 = NukePersistent NOT TESTED YET
+		if (effects.effect_id == uint32_t(7)) //7 = NukePersistent NOT TESTED YET
 		{
 			moveCamera(effects.positions.front(), prio);
 			return;
@@ -91,23 +105,9 @@ void CameraModule::moveCameraFallingNuke()
 	}
 }
 
-//Not yet implemented
-void CameraModule::moveCameraNukeDetect(const sc2::Point2D target)
-{
-	const int prio = 4;
-	if (!shouldMoveCamera(prio))
-	{
-		return;
-	}
-	else
-	{
-		moveCamera(target, prio);
-	}
-}
-
 void CameraModule::moveCameraIsUnderAttack()
 {
-	const int prio = 3;
+	const int prio = 4;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -125,7 +125,7 @@ void CameraModule::moveCameraIsUnderAttack()
 
 void CameraModule::moveCameraIsAttacking()
 {
-	const int prio = 3;
+	const int prio = 4;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -168,7 +168,7 @@ void CameraModule::moveCameraScoutWorker()
 
 void CameraModule::moveCameraDrop()
 {
-	const int prio = 2;
+	const int prio = 3;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -185,7 +185,7 @@ void CameraModule::moveCameraDrop()
 
 void CameraModule::moveCameraArmy()
 {
-	const int prio = 1;
+	int prio = 1;
 	if (!shouldMoveCamera(prio))
 	{
 		return;
@@ -231,7 +231,15 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 	{
 		return;
 	}
-	const int prio = 1;
+	int prio;
+	if (isBuilding(unit->unit_type))
+	{
+		prio = 2;
+	}
+	else
+	{
+		prio = 1;
+	}
 	if (!shouldMoveCamera(prio) || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
 	{
 		return;
