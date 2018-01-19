@@ -17,8 +17,8 @@ const float cameraDistance = 50.0f;
 CameraModule::CameraModule(sc2::Client * const bot):
 	m_initialized(false),
 	m_client(bot), 
-	cameraMoveTime(150),
-	cameraMoveTimeMin(50),
+	cameraMoveTime(200),
+	cameraMoveTimeMin(75),
 	watchScoutWorkerUntil(7500),
 	lastMoved(0),
 	lastMovedPriority(0),
@@ -255,7 +255,7 @@ const bool CameraModule::shouldMoveCamera(const int priority) const
 	const int elapsedFrames = m_client->Observation()->GetGameLoop() - lastMoved;
 	const bool isTimeToMove = elapsedFrames >= cameraMoveTime;
 	const bool isTimeToMoveIfHigherPrio = elapsedFrames >= cameraMoveTimeMin;
-	const bool isHigherPrio = lastMovedPriority < priority;
+	const bool isHigherPrio = lastMovedPriority < priority || (followUnit && !cameraFocusUnit->is_alive);
 	// camera should move IF: enough time has passed OR (minimum time has passed AND new prio is higher)
 	return isTimeToMove || (isHigherPrio && isTimeToMoveIfHigherPrio);
 }
