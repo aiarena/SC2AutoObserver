@@ -73,7 +73,7 @@ public:
 	void onStart();
 };
 
-class CameraModuleAgent: public CameraModule
+class CameraModuleAgent : public CameraModule
 {
 	void updateCameraPositionExcecute() override;
 public:
