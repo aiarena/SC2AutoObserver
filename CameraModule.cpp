@@ -14,9 +14,9 @@ const float nearStartLocationDistance = 50.0f;
 //Camera distance to map (zoom). 0 means default.
 const float cameraDistance = 50.0f;
 
-CameraModule::CameraModule(sc2::Client * const bot):
+CameraModule::CameraModule(sc2::Client * const bot) :
 	m_initialized(false),
-	m_client(bot), 
+	m_client(bot),
 	cameraMoveTime(200),
 	cameraMoveTimeMin(75),
 	watchScoutWorkerUntil(7500),
@@ -39,7 +39,7 @@ void CameraModule::onStart()
 			lastMovedPriority = 0;
 			lastMovedPosition = sc2::Point2D(0, 0);
 			cameraFocusUnit = nullptr;
-			followUnit=false;
+			followUnit = false;
 		}
 		setPlayerIds();
 		setPlayerStartLocations();
@@ -155,11 +155,11 @@ void CameraModule::moveCameraScoutWorker()
 		{
 			continue;
 		}
-		if (isNearOpponentStartLocation(unit->pos,unit->owner))
+		if (isNearOpponentStartLocation(unit->pos, unit->owner))
 		{
 			moveCamera(unit, highPrio);
 		}
-		else if (!isNearOwnStartLocation(unit->pos,unit->owner))
+		else if (!isNearOwnStartLocation(unit->pos, unit->owner))
 		{
 			moveCamera(unit, lowPrio);
 		}
@@ -176,7 +176,7 @@ void CameraModule::moveCameraDrop()
 	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if ((unit->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_OVERLORDTRANSPORT || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_MEDIVAC || unit->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_WARPPRISM)
-			&& isNearOpponentStartLocation(unit->pos,unit->owner) && unit->cargo_space_taken > 0)
+			&& isNearOpponentStartLocation(unit->pos, unit->owner) && unit->cargo_space_taken > 0)
 		{
 			moveCamera(unit, prio);
 		}
@@ -196,9 +196,9 @@ void CameraModule::moveCameraArmy()
 	const sc2::Unit * bestPosUnit = nullptr;
 	int mostUnitsNearby = 0;
 
-	for (auto & unit: m_client->Observation()->GetUnits())
+	for (auto & unit : m_client->Observation()->GetUnits())
 	{
-		if (!isArmyUnitType(unit->unit_type.ToType()) || unit->display_type!=sc2::Unit::DisplayType::Visible || unit->alliance==sc2::Unit::Alliance::Neutral)
+		if (!isArmyUnitType(unit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral)
 		{
 			continue;
 		}
@@ -207,7 +207,7 @@ void CameraModule::moveCameraArmy()
 		int nrUnitsNearby = 0;
 		for (auto & nearbyUnit : m_client->Observation()->GetUnits())
 		{
-			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral || Dist(unit->pos,nearbyUnit->pos)>armyBlobRadius)
+			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral || Dist(unit->pos, nearbyUnit->pos)>armyBlobRadius)
 			{
 				continue;
 			}
@@ -260,7 +260,7 @@ const bool CameraModule::shouldMoveCamera(const int priority) const
 	return isTimeToMove || (isHigherPrio && isTimeToMoveIfHigherPrio);
 }
 
-void CameraModule::moveCamera(const sc2::Point2D pos,const int priority)
+void CameraModule::moveCamera(const sc2::Point2D pos, const int priority)
 {
 	if (!shouldMoveCamera(priority))
 	{
@@ -403,12 +403,12 @@ const bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
 	}
 }
 
-const bool CameraModule::isNearOpponentStartLocation(const sc2::Point2D pos,const int player) const
+const bool CameraModule::isNearOpponentStartLocation(const sc2::Point2D pos, const int player) const
 {
 	return isNearOwnStartLocation(pos, getOpponent(player));
 }
 
-const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos,const int player) const
+const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos, const int player) const
 {
 	return Dist(pos, m_startLocations.at(player)) < nearStartLocationDistance;
 }
@@ -426,7 +426,7 @@ const bool CameraModule::isArmyUnitType(const sc2::UNIT_TYPEID type) const
 
 const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 {
-	switch(type)
+	switch (type)
 	{
 		//Terran
 	case sc2::UNIT_TYPEID::TERRAN_ARMORY:
@@ -578,7 +578,7 @@ CameraModule::~CameraModule()
 
 
 ///////////////////////// For observers
-CameraModuleObserver::CameraModuleObserver(sc2::ReplayObserver * const observer):CameraModule(observer),m_observer(observer)
+CameraModuleObserver::CameraModuleObserver(sc2::ReplayObserver * const observer) :CameraModule(observer), m_observer(observer)
 {
 
 }
@@ -598,7 +598,7 @@ void CameraModuleObserver::onStart()
 
 void CameraModuleObserver::updateCameraPositionExcecute()
 {
-	m_observer->ObserverAction()->CameraMove(currentCameraPosition,cameraDistance);
+	m_observer->ObserverAction()->CameraMove(currentCameraPosition, cameraDistance);
 }
 
 
@@ -606,9 +606,9 @@ void CameraModuleObserver::updateCameraPositionExcecute()
 
 
 ///////////////////////// For agents
-CameraModuleAgent::CameraModuleAgent(sc2::Agent * const agent):CameraModule(agent)
+CameraModuleAgent::CameraModuleAgent(sc2::Agent * const agent) :CameraModule(agent)
 {
-	
+
 }
 
 

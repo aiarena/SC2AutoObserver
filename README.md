@@ -40,7 +40,6 @@ void sc2::Agent::OnUnitCreated(const sc2::Unit * unit)
 }
 ```
 
-Please be aware that the camera movement is realized via the debug interface. So the debug commands have to be processed and "Debug()->SendDebug();" will be called every time the camera moves.
 An example of an bot that uses the Sc2AutoObserver can be found here: https://github.com/Archiatrus/5minBot A replay showcasing the camera movement can be found in examples. Just select the vision of the Terran player. In case of an unable to open map error, open a game vs AI on Interloper LE in the real game and try again.
 
 ### How to use with sc2::ReplayObserver
