@@ -99,7 +99,6 @@ public:
 			alreadySeen[unit->tag] = true;
 		}
 		*/
-		pressKey();
 		m_cameraModule.onStart();
 	}
 
@@ -115,6 +114,10 @@ public:
 
 	void OnStep() final
 	{
+		if (Observation()->GetGameLoop() == 10)
+		{
+			pressKey();
+		}
 		Timer t;
 		t.start();
 		Observation()->GetChatMessages();
@@ -178,7 +181,6 @@ int main(int argc, char* argv[]) {
 	Replay replay_observer(speed);
 	coordinator.AddReplayObserver(&replay_observer);
 	coordinator.SetReplayPerspective(0);
-	coordinator.SetRealtime(true);
 	coordinator.SetMultithreaded(true);
 	while (true)
 	{
