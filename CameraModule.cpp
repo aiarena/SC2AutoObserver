@@ -1,17 +1,17 @@
-#include "sc2api/sc2_api.h"
 #include "CameraModule.h"
-#include "sc2api/sc2_proto_interface.h"
 #include <iostream>
+#include "sc2api/sc2_api.h"
+#include "sc2api/sc2_proto_interface.h"
 
-//Radius to detect groups of army units
+// Radius to detect groups of army units
 const float armyBlobRadius = 10.0f;
-//Movement speed of camera
+// Movement speed of camera
 const float moveFactor = 0.1f;
-//Only smooth movemnt when closer as...
+// Only smooth movemnt when closer as...
 const float cameraJumpThreshold = 30.0f;
-//When is a unit near a start location
+// When is a unit near a start location
 const float nearStartLocationDistance = 50.0f;
-//Camera distance to map (zoom). 0 means default.
+// Camera distance to map (zoom). 0 means default.
 const float cameraDistance = 50.0f;
 
 CameraModule::CameraModule(sc2::Client * const bot) :
@@ -51,7 +51,7 @@ void CameraModule::onStart()
 
 void CameraModule::onFrame()
 {
-	//Sometimes the first GetObservation() fails...
+	// Sometimes the first GetObservation() fails...
 	if (!m_initialized)
 	{
 		onStart();
@@ -59,7 +59,7 @@ void CameraModule::onFrame()
 	}
 	moveCameraFallingNuke();
 	moveCameraNukeDetect();
-	//moveCameraIsUnderAttack();
+	// moveCameraIsUnderAttack();
 	moveCameraIsAttacking();
 	if (m_client->Observation()->GetGameLoop() <= watchScoutWorkerUntil)
 	{
@@ -97,7 +97,7 @@ void CameraModule::moveCameraNukeDetect()
 	}
 	for (auto & effects : m_client->Observation()->GetEffects())
 	{
-		if (effects.effect_id == uint32_t(7)) //7 = NukePersistent NOT TESTED YET
+		if (effects.effect_id == uint32_t(7))  // 7 = NukePersistent NOT TESTED YET
 		{
 			moveCamera(effects.positions.front(), prio);
 			return;
@@ -198,7 +198,11 @@ void CameraModule::moveCameraArmy()
 
 	for (auto & unit : m_client->Observation()->GetUnits())
 	{
-		if (!isArmyUnitType(unit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral)
+		if (unit->owner == 1)
+		{
+			int a = 1;
+		}
+		if (!isArmyUnitType(unit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || !(unit->owner == 1 || unit->owner == 2))
 		{
 			continue;
 		}
@@ -207,7 +211,7 @@ void CameraModule::moveCameraArmy()
 		int nrUnitsNearby = 0;
 		for (auto & nearbyUnit : m_client->Observation()->GetUnits())
 		{
-			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || unit->alliance == sc2::Unit::Alliance::Neutral || Dist(unit->pos, nearbyUnit->pos)>armyBlobRadius)
+			if (!isArmyUnitType(nearbyUnit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || !(unit->owner == 1 || unit->owner == 2) || Dist(unit->pos, nearbyUnit->pos) > armyBlobRadius )
 			{
 				continue;
 			}
@@ -240,7 +244,7 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 	{
 		prio = 1;
 	}
-	if (!shouldMoveCamera(prio) || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE)
+	if (!shouldMoveCamera(prio) || unit->unit_type.ToType() == sc2::UNIT_TYPEID::TERRAN_KD8CHARGE || unit->unit_type.ToType() == sc2::UNIT_TYPEID::ZERG_LARVA || unit->unit_type.ToType() == sc2::UNIT_TYPEID::PROTOSS_INTERCEPTOR)
 	{
 		return;
 	}
@@ -303,7 +307,7 @@ void CameraModule::updateCameraPosition()
 	{
 		cameraFocusPosition = cameraFocusUnit->pos;
 	}
-	//We only do smooth movement, if the focus is nearby.
+	// We only do smooth movement, if the focus is nearby.
 	float dist = Dist(currentCameraPosition, cameraFocusPosition);
 	if (dist > cameraJumpThreshold)
 	{
@@ -325,9 +329,9 @@ void CameraModule::updateCameraPosition()
 	}
 }
 
-//Utility
+// Utility
 
-//At the moment there is no flag for being under attack
+// At the moment there is no flag for being under attack
 const bool CameraModule::isUnderAttack(const sc2::Unit * unit) const
 {
 	return false;
@@ -335,17 +339,17 @@ const bool CameraModule::isUnderAttack(const sc2::Unit * unit) const
 
 const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 {
-	if (!isArmyUnitType(attacker->unit_type.ToType()) || attacker->display_type != sc2::Unit::DisplayType::Visible || attacker->alliance == sc2::Unit::Alliance::Neutral)
+	if (!isArmyUnitType(attacker->unit_type.ToType()) || attacker->display_type != sc2::Unit::DisplayType::Visible || !(attacker->owner == 1 || attacker->owner == 2))
 	{
 		return false;
 	}
-	//Option A
-	//return unit->orders.size()>0 && unit->orders.front().ability_id.ToType() == sc2::ABILITY_ID::ATTACK_ATTACK;
-	//Option B
-	//return unit->weapon_cooldown > 0.0f;
-	//Option C 
-	//Not sure if observer can see the "private" fields of player units.
-	//So we just assume: if it is in range and an army unit -> it attacks
+	// Option A
+	// return unit->orders.size()>0 && unit->orders.front().ability_id.ToType() == sc2::ABILITY_ID::ATTACK_ATTACK;
+	// Option B
+	// return unit->weapon_cooldown > 0.0f;
+	// Option C
+	// Not sure if observer can see the "private" fields of player units.
+	// So we just assume: if it is in range and an army unit -> it attacks
 	std::vector<sc2::Weapon> weapons = m_client->Observation()->GetUnitTypeData()[attacker->unit_type].weapons;
 	float rangeAir = -1.0;
 	float rangeGround = -1.0;
@@ -368,7 +372,7 @@ const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 	const int enemyID = getOpponent(attacker->owner);
 	for (auto & unit : m_client->Observation()->GetUnits())
 	{
-		if (unit->display_type != sc2::Unit::DisplayType::Visible || unit->owner != enemyID || unit->alliance == sc2::Unit::Alliance::Neutral)
+		if (unit->display_type != sc2::Unit::DisplayType::Visible || unit->owner != enemyID || !(attacker->owner == 1 || attacker->owner == 2))
 		{
 			continue;
 		}
@@ -416,10 +420,11 @@ const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos, const in
 const bool CameraModule::isArmyUnitType(const sc2::UNIT_TYPEID type) const
 {
 	if (IsWorkerType(type)) { return false; }
-	if (type == sc2::UNIT_TYPEID::ZERG_OVERLORD) { return false; } //Excluded here the overlord transport etc to count them as army unit
+	if (type == sc2::UNIT_TYPEID::ZERG_OVERLORD) { return false; }  // Excluded here the overlord transport etc to count them as army unit
 	if (isBuilding(type)) { return false; }
 	if (type == sc2::UNIT_TYPEID::ZERG_EGG) { return false; }
 	if (type == sc2::UNIT_TYPEID::ZERG_LARVA) { return false; }
+	if (type == sc2::UNIT_TYPEID::PROTOSS_INTERCEPTOR) { return false; }
 
 	return true;
 }
@@ -428,7 +433,7 @@ const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 {
 	switch (type)
 	{
-		//Terran
+		// Terran
 	case sc2::UNIT_TYPEID::TERRAN_ARMORY:
 	case sc2::UNIT_TYPEID::TERRAN_BARRACKS:
 	case sc2::UNIT_TYPEID::TERRAN_BARRACKSFLYING:
@@ -500,6 +505,7 @@ const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 	case sc2::UNIT_TYPEID::PROTOSS_TEMPLARARCHIVE:
 	case sc2::UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL:
 	case sc2::UNIT_TYPEID::PROTOSS_WARPGATE:
+	case sc2::UNIT_TYPEID::PROTOSS_SHIELDBATTERY:
 		return true;
 	}
 	return false;
@@ -507,7 +513,7 @@ const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 
 const bool CameraModule::isValidPos(const sc2::Point2D pos) const
 {
-	//Maybe playable width/height?
+	// Maybe playable width/height?
 	return pos.x >= 0 && pos.y >= 0 && pos.x < m_client->Observation()->GetGameInfo().width && pos.y < m_client->Observation()->GetGameInfo().height;
 }
 
@@ -525,8 +531,7 @@ const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 void CameraModule::setPlayerStartLocations()
 {
 	m_startLocations.clear();
-	std::vector<sc2::Point2D> startLocations = m_client->Observation()->GetGameInfo().start_locations;
-	sc2::Units bases = m_client->Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER,sc2::UNIT_TYPEID::ZERG_HATCHERY,sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
+	sc2::Units bases = m_client->Observation()->GetUnits(sc2::IsUnits({ sc2::UNIT_TYPEID::TERRAN_COMMANDCENTER, sc2::UNIT_TYPEID::ZERG_HATCHERY, sc2::UNIT_TYPEID::PROTOSS_NEXUS }));
 	// If we are not an observer
 	// Assumes 2 player map
 	if (bases.size() == 1)
@@ -573,24 +578,21 @@ const sc2::Point2D CameraModule::getInvertedPos(const sc2::Point2D pos) const
 
 CameraModule::~CameraModule()
 {
-
 }
-
 
 ///////////////////////// For observers
 CameraModuleObserver::CameraModuleObserver(sc2::ReplayObserver * const observer) :CameraModule(observer), m_observer(observer)
 {
-
 }
 
 void CameraModuleObserver::onStart()
 {
-	//This should work once it is implemented on the proto side.
+	// This should work once it is implemented on the proto side.
 	sc2::GameRequestPtr request = m_observer->Control()->Proto().MakeRequest();
 	SC2APIProtocol::RequestObserverAction* obsRequest = request->mutable_obs_action();
 	SC2APIProtocol::ObserverAction* action = obsRequest->add_actions();
 	SC2APIProtocol::ActionObserverPlayerPerspective * player_perspective = action->mutable_player_perspective();
-	player_perspective->set_player_id(0); //0 = everyone
+	player_perspective->set_player_id(0);  // 0 = everyone
 	m_client->Control()->Proto().SendRequest(request);
 	m_client->Control()->WaitForResponse();
 	CameraModule::onStart();
@@ -601,14 +603,9 @@ void CameraModuleObserver::updateCameraPositionExcecute()
 	m_observer->ObserverAction()->CameraMove(currentCameraPosition, cameraDistance);
 }
 
-
-
-
-
 ///////////////////////// For agents
 CameraModuleAgent::CameraModuleAgent(sc2::Agent * const agent) :CameraModule(agent)
 {
-
 }
 
 
@@ -626,6 +623,6 @@ void CameraModuleAgent::updateCameraPositionExcecute()
 
 	m_client->Control()->Proto().SendRequest(camera_request);
 	m_client->Control()->WaitForResponse();
-	//m_client->Debug()->DebugMoveCamera(currentCameraPosition);
-	//m_client->Debug()->SendDebug();
+	// m_client->Debug()->DebugMoveCamera(currentCameraPosition);
+	// m_client->Debug()->SendDebug();
 }
