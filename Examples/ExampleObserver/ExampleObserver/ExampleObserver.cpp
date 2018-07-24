@@ -43,35 +43,58 @@ bool loadReplayPaths(std::string & name, std::vector<std::string> & v)
 	return true;
 }
 
-void pressKey()
+void pressDKey()
 {
+	auto hwnd = FindWindow(NULL, TEXT("StarCraft II"));
+	if (hwnd != 0)
+	{
+		SetForegroundWindow(hwnd);
+		SetFocus(hwnd);
+		SetActiveWindow(hwnd);
+	}
 	INPUT ip;
 	ip.type = INPUT_KEYBOARD;
-	ip.ki.wScan = 0; // hardware scan code for key
+	ip.ki.wScan = 0;  // hardware scan code for key
 	ip.ki.time = 0;
 	ip.ki.dwExtraInfo = 0;
 
 	// Press the "D" key
-	ip.ki.wVk = 0x44; // virtual-key code for the "a" key
-	ip.ki.dwFlags = 0; // 0 for key press
+	ip.ki.wVk = 0x44;  // virtual-key code for the "D" key
+	ip.ki.dwFlags = 0;  // 0 for key press
 	SendInput(1, &ip, sizeof(INPUT));
 
 	// Release the "D" key.
-	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+	ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
+}
+
+void pressAltEnter()
+{
+	auto hwnd = FindWindow(NULL, TEXT("StarCraft II"));
+	if (hwnd != 0)
+	{
+		SetForegroundWindow(hwnd);
+		SetFocus(hwnd);
+		SetActiveWindow(hwnd);
+	}
+	INPUT ip;
+	ip.type = INPUT_KEYBOARD;
+	ip.ki.wScan = 0;  // hardware scan code for key
+	ip.ki.time = 0;
+	ip.ki.dwExtraInfo = 0;
 
 	// Press the "alt" key
-	ip.ki.wVk = 0x12; // virtual-key code for the "alt" key
-	ip.ki.dwFlags = 0; // 0 for key press
+	ip.ki.wVk = 0x12;  // virtual-key code for the "alt" key
+	ip.ki.dwFlags = 0;  // 0 for key press
 	SendInput(1, &ip, sizeof(INPUT));
 
 	// Press the "enter" key
-	ip.ki.wVk = 0x0D; // virtual-key code for the "alt" key
+	ip.ki.wVk = 0x0D;  // virtual-key code for the "alt" key
 	SendInput(1, &ip, sizeof(INPUT));
 
 	// Release the "alt" key
 	ip.ki.wVk = 0x12;
-	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+	ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
 
 	// Release the "enter" key
@@ -81,13 +104,13 @@ void pressKey()
 
 class Replay : public sc2::ReplayObserver
 {
-public:
+ public:
 	CameraModuleObserver m_cameraModule;
 	bool GameEnded;
 	float speed;
 	std::map < sc2::Tag, bool> alreadySeen;
 
-	Replay(float speed) : sc2::ReplayObserver(),m_cameraModule(this),GameEnded(false),speed(speed)
+	Replay(float speed) : sc2::ReplayObserver(), m_cameraModule(this), GameEnded(false), speed(speed)
 	{
 	}
 
@@ -109,14 +132,14 @@ public:
 
 	void OnUnitEnterVision(const sc2::Unit* unit) final
 	{
-		//Does not get called.
+		// Does not get called.
 	}
 
 	void OnStep() final
 	{
 		if (Observation()->GetGameLoop() == 10)
 		{
-			pressKey();
+			pressDKey();
 		}
 		Timer t;
 		t.start();
@@ -133,7 +156,6 @@ public:
 		while (t.getElapsedTimeInMilliSec() < 1000.0 / (22.4*speed))
 		{
 		}
-
 	}
 
 	void OnGameEnd() final
@@ -144,8 +166,8 @@ public:
 };
 
 
-int main(int argc, char* argv[]) {
-	
+int main(int argc, char* argv[])
+{
 	sc2::ArgParser arg_parser(argv[0]);
 	arg_parser.AddOptions({
 		{ "-p", "--Path", "Path to a single SC2 replay or directory with replay files", true },
@@ -153,8 +175,7 @@ int main(int argc, char* argv[]) {
 	});
 	arg_parser.Parse(argc, argv);
 	std::string GamePortStr;
-	
-	
+
 	std::string replayPath;
 	if (!arg_parser.Get("Path", replayPath))
 	{
@@ -184,11 +205,10 @@ int main(int argc, char* argv[]) {
 	coordinator.SetMultithreaded(true);
 	while (true)
 	{
-		
 		bool isDirectory = loadReplayPaths(replayPath, replayFiles);
 		if (replayIndex == replayFiles.size())
 		{
-			std::cout << "There are no more replays at "<< replayPath << "\\*" <<"! I will wait for 30 seconds and try again." << std::endl;
+			std::cout << "There are no more replays at " << replayPath << "\\*" << std::endl << "I will wait for 30 seconds and try again." << std::endl;
 			if (replayIndex == 0)
 			{
 				std::cout << "If you provide a directory please do not end the path with an '\'" << std::endl;
@@ -209,9 +229,12 @@ int main(int argc, char* argv[]) {
 			std::cout << "Please provide the replay path as command line argument." << std::endl;
 			return 1;
 		}
+		// Update once so that the game launches
+		coordinator.Update();
+		// Full screen mode
+		pressAltEnter();
 		while (coordinator.Update() && !coordinator.AllGamesEnded())
 		{
-
 		}
 		if (!isDirectory)
 		{
