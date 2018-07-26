@@ -51,21 +51,21 @@ void pressDKey()
 		SetForegroundWindow(hwnd);
 		SetFocus(hwnd);
 		SetActiveWindow(hwnd);
+		INPUT ip;
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.wScan = 0;  // hardware scan code for key
+		ip.ki.time = 0;
+		ip.ki.dwExtraInfo = 0;
+
+		// Press the "D" key
+		ip.ki.wVk = 0x44;  // virtual-key code for the "D" key
+		ip.ki.dwFlags = 0;  // 0 for key press
+		SendInput(1, &ip, sizeof(INPUT));
+
+		// Release the "D" key.
+		ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
+		SendInput(1, &ip, sizeof(INPUT));
 	}
-	INPUT ip;
-	ip.type = INPUT_KEYBOARD;
-	ip.ki.wScan = 0;  // hardware scan code for key
-	ip.ki.time = 0;
-	ip.ki.dwExtraInfo = 0;
-
-	// Press the "D" key
-	ip.ki.wVk = 0x44;  // virtual-key code for the "D" key
-	ip.ki.dwFlags = 0;  // 0 for key press
-	SendInput(1, &ip, sizeof(INPUT));
-
-	// Release the "D" key.
-	ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
-	SendInput(1, &ip, sizeof(INPUT));
 }
 
 void pressAltEnter()
@@ -76,30 +76,34 @@ void pressAltEnter()
 		SetForegroundWindow(hwnd);
 		SetFocus(hwnd);
 		SetActiveWindow(hwnd);
+		INPUT ip;
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.wScan = 0;  // hardware scan code for key
+		ip.ki.time = 0;
+		ip.ki.dwExtraInfo = 0;
+
+		// Press keys
+		ip.ki.dwFlags = 0;  // 0 for key press
+
+		// Press the "alt" key
+		ip.ki.wVk = 0x12;  // virtual-key code for the "alt" key
+		SendInput(1, &ip, sizeof(INPUT));
+
+		// Press the "enter" key
+		ip.ki.wVk = 0x0D;  // virtual-key code for the "alt" key
+		SendInput(1, &ip, sizeof(INPUT));
+
+		// Release keys
+		ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
+
+		// Release the "alt" key
+		ip.ki.wVk = 0x12;
+		SendInput(1, &ip, sizeof(INPUT));
+
+		// Release the "enter" key
+		ip.ki.wVk = 0x0D;
+		SendInput(1, &ip, sizeof(INPUT));
 	}
-	INPUT ip;
-	ip.type = INPUT_KEYBOARD;
-	ip.ki.wScan = 0;  // hardware scan code for key
-	ip.ki.time = 0;
-	ip.ki.dwExtraInfo = 0;
-
-	// Press the "alt" key
-	ip.ki.wVk = 0x12;  // virtual-key code for the "alt" key
-	ip.ki.dwFlags = 0;  // 0 for key press
-	SendInput(1, &ip, sizeof(INPUT));
-
-	// Press the "enter" key
-	ip.ki.wVk = 0x0D;  // virtual-key code for the "alt" key
-	SendInput(1, &ip, sizeof(INPUT));
-
-	// Release the "alt" key
-	ip.ki.wVk = 0x12;
-	ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
-	SendInput(1, &ip, sizeof(INPUT));
-
-	// Release the "enter" key
-	ip.ki.wVk = 0x0D;
-	SendInput(1, &ip, sizeof(INPUT));
 }
 
 class Replay : public sc2::ReplayObserver
@@ -199,8 +203,8 @@ int main(int argc, char* argv[])
 	if (!coordinator.LoadSettings(argc, argv)) {
 		return 1;
 	}
-	Replay replay_observer(speed);
-	coordinator.AddReplayObserver(&replay_observer);
+	Replay replayObserver(speed);
+	coordinator.AddReplayObserver(&replayObserver);
 	coordinator.SetReplayPerspective(0);
 	coordinator.SetMultithreaded(true);
 	while (true)
@@ -229,10 +233,22 @@ int main(int argc, char* argv[])
 			std::cout << "Please provide the replay path as command line argument." << std::endl;
 			return 1;
 		}
-		// Update once so that the game launches
-		coordinator.Update();
-		// Full screen mode
-		pressAltEnter();
+		if (!FindWindow(NULL, TEXT("StarCraft II")))
+		{
+			// Update once so that the game launches
+			coordinator.Update();
+			// Wait for launch and then Full screen mode
+			int counter = 0;
+			while (!FindWindow(NULL, TEXT("StarCraft II")) && counter < 10)
+			{
+				++counter;
+				sc2::SleepFor(500);
+			}
+			if (counter < 10)
+			{
+				pressAltEnter();
+			}
+		}
 		while (coordinator.Update() && !coordinator.AllGamesEnded())
 		{
 		}
