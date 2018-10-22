@@ -250,7 +250,7 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 	}
 }
 
-const bool CameraModule::shouldMoveCamera(const int priority) const
+bool CameraModule::shouldMoveCamera(const int priority) const
 {
 	const int elapsedFrames = m_client->Observation()->GetGameLoop() - lastMoved;
 	const bool isTimeToMove = elapsedFrames >= cameraMoveTime;
@@ -328,12 +328,12 @@ void CameraModule::updateCameraPosition()
 //Utility
 
 //At the moment there is no flag for being under attack
-const bool CameraModule::isUnderAttack(const sc2::Unit * unit) const
+bool CameraModule::isUnderAttack(const sc2::Unit * unit) const
 {
 	return false;
 }
 
-const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
+bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 {
 	if (!isArmyUnitType(attacker->unit_type.ToType()) || attacker->display_type != sc2::Unit::DisplayType::Visible || attacker->alliance == sc2::Unit::Alliance::Neutral)
 	{
@@ -390,7 +390,7 @@ const bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 	return false;
 }
 
-const bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
+bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
 {
 	switch (type)
 	{
@@ -403,17 +403,17 @@ const bool CameraModule::IsWorkerType(const sc2::UNIT_TYPEID type) const
 	}
 }
 
-const bool CameraModule::isNearOpponentStartLocation(const sc2::Point2D pos, const int player) const
+bool CameraModule::isNearOpponentStartLocation(const sc2::Point2D pos, const int player) const
 {
 	return isNearOwnStartLocation(pos, getOpponent(player));
 }
 
-const bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos, const int player) const
+bool CameraModule::isNearOwnStartLocation(const sc2::Point2D pos, const int player) const
 {
 	return Dist(pos, m_startLocations.at(player)) < nearStartLocationDistance;
 }
 
-const bool CameraModule::isArmyUnitType(const sc2::UNIT_TYPEID type) const
+bool CameraModule::isArmyUnitType(const sc2::UNIT_TYPEID type) const
 {
 	if (IsWorkerType(type)) { return false; }
 	if (type == sc2::UNIT_TYPEID::ZERG_OVERLORD) { return false; } //Excluded here the overlord transport etc to count them as army unit
@@ -424,7 +424,7 @@ const bool CameraModule::isArmyUnitType(const sc2::UNIT_TYPEID type) const
 	return true;
 }
 
-const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
+bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 {
 	switch (type)
 	{
@@ -501,22 +501,22 @@ const bool CameraModule::isBuilding(const sc2::UNIT_TYPEID type) const
 	case sc2::UNIT_TYPEID::PROTOSS_TWILIGHTCOUNCIL:
 	case sc2::UNIT_TYPEID::PROTOSS_WARPGATE:
 		return true;
-	}
-	return false;
+    default: return false;
+    }
 }
 
-const bool CameraModule::isValidPos(const sc2::Point2D pos) const
+bool CameraModule::isValidPos(const sc2::Point2D pos) const
 {
 	//Maybe playable width/height?
 	return pos.x >= 0 && pos.y >= 0 && pos.x < m_client->Observation()->GetGameInfo().width && pos.y < m_client->Observation()->GetGameInfo().height;
 }
 
-const float CameraModule::Dist(const sc2::Unit * A, const sc2::Unit * B) const
+float CameraModule::Dist(const sc2::Unit * A, const sc2::Unit * B) const
 {
 	return std::sqrt(std::pow(A->pos.x - B->pos.x, 2) + std::pow(A->pos.y - B->pos.y, 2));
 }
 
-const float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
+float CameraModule::Dist(const sc2::Point2D A, const sc2::Point2D B) const
 {
 	return std::sqrt(std::pow(A.x - B.x, 2) + std::pow(A.y - B.y, 2));
 }
@@ -554,7 +554,7 @@ void CameraModule::setPlayerIds()
 	}
 }
 
-const int CameraModule::getOpponent(const int player) const
+int CameraModule::getOpponent(const int player) const
 {
 	for (auto & i : m_playerIDs)
 	{

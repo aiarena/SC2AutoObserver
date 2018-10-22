@@ -35,20 +35,20 @@ protected:
 	void moveCameraDrop();
 	void moveCameraArmy();
 	void updateCameraPosition();
-	const bool shouldMoveCamera(const int priority) const;
-	const bool isNearOpponentStartLocation(const sc2::Point2D pos, const int player) const;
-	const bool isNearOwnStartLocation(const sc2::Point2D pos, int player) const;
-	const bool isArmyUnitType(const sc2::UNIT_TYPEID type) const;
-	const bool isBuilding(const sc2::UNIT_TYPEID type) const;
-	const bool isValidPos(const sc2::Point2D pos) const;
-	const bool isUnderAttack(const sc2::Unit * unit) const;
-	const bool isAttacking(const sc2::Unit * unit) const;
-	const bool IsWorkerType(const sc2::UNIT_TYPEID type) const;
-	const float Dist(const sc2::Unit * A, const sc2::Unit * B) const;
-	const float Dist(const sc2::Point2D A, const sc2::Point2D B) const;
+    bool shouldMoveCamera(const int priority) const;
+    bool isNearOpponentStartLocation(const sc2::Point2D pos, const int player) const;
+    bool isNearOwnStartLocation(const sc2::Point2D pos, int player) const;
+    bool isArmyUnitType(const sc2::UNIT_TYPEID type) const;
+    bool isBuilding(const sc2::UNIT_TYPEID type) const;
+    bool isValidPos(const sc2::Point2D pos) const;
+    bool isUnderAttack(const sc2::Unit * unit) const;
+    bool isAttacking(const sc2::Unit * unit) const;
+    bool IsWorkerType(const sc2::UNIT_TYPEID type) const;
+    float Dist(const sc2::Unit * A, const sc2::Unit * B) const;
+    float Dist(const sc2::Point2D A, const sc2::Point2D B) const;
 	void setPlayerStartLocations();
 	void setPlayerIds();
-	const int getOpponent(const int player) const;
+    int getOpponent(const int player) const;
 	const sc2::Point2D getInvertedPos(const sc2::Point2D) const;
 
 	//Depending on whether we have an agent or an observer we need to use different functions to move the camera
