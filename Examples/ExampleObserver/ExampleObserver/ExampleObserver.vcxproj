@@ -23,7 +23,7 @@
     <ProjectGuid>{BBC9368B-1D26-4CC1-9A8C-C21C17D9EC6B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ExampleObserver</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -76,9 +76,9 @@
     <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -88,8 +88,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\D\Desktop\SC2 AI\s2client-api\project\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath);$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,7 +103,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Documents\GitHub\replay_observer\s2client-api\build\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ImportLibrary>C:/Libraries/SC2AI/SC2API/s2client-api/build/bin/Intermediate_bot.lib</ImportLibrary>
     </Link>
@@ -119,20 +119,23 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_SCL_SECURE_NO_WARNINGS;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4099; 4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);D:\Documents\GitHub\cpp-sc2build\generated;D:\Documents\GitHub\cpp-sc2\include;D:\Documents\GitHub\cpp-sc2\contrib\protobuf\src</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Documents\GitHub\Sc2AutoObserver\cpp-sc2\build\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Libraries/SC2AI/SC2API/s2client-api/build/bin/Intermediate_bot.lib</ImportLibrary>
+      <ImportLibrary>
+      </ImportLibrary>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;sc2apid.lib;sc2libd.lib;sc2utilsd.lib;sc2rendererd.lib;sc2protocold.lib;libprotobufd.lib;civetweb.lib;winmm.lib;imm32.lib;version.lib;dinput8.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
@@ -154,8 +157,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Documents\GitHub\replay_observer\s2client-api\build\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -166,8 +172,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat />
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);D:\Documents\GitHub\cpp-sc2\build\generated;D:\Documents\GitHub\cpp-sc2\include;D:\Documents\GitHub\cpp-sc2\contrib\protobuf\src</AdditionalIncludeDirectories>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -177,7 +183,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib;sc2api.lib;sc2lib.lib;sc2utils.lib;sc2renderer.lib;sc2protocol.lib;libprotobuf.lib;civetweb.lib;winmm.lib;imm32.lib;version.lib;dinput8.lib</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>D:\Documents\GitHub\cpp-sc2\build\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\CameraModule.cpp" />

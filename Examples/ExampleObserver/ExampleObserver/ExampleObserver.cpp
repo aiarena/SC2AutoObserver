@@ -10,7 +10,7 @@
 
 #include "../../../CameraModule.h"
 #include "Timer.hpp"
-
+#include "sc2api/sc2_gametypes.h"
 
 bool loadReplayPaths(std::string & name, std::vector<std::string> & v)
 {
@@ -147,7 +147,7 @@ class Replay : public sc2::ReplayObserver
 		}
 		Timer t;
 		t.start();
-		Observation()->GetChatMessages();
+		Observation()->GetChatMessages();		
 		for (const auto & unit : Observation()->GetUnits())
 		{
 			if (!alreadySeen[unit->tag])
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
 	if (!arg_parser.Get("Path", replayPath))
 	{
 		std::cout << "Please provide the path to a single SC2 replay or directory with replay files via --Path." << std::endl;
-		return 1;
+		return 1;		
 	}
 	float speed;
 	std::string speedString;
@@ -206,7 +206,9 @@ int main(int argc, char* argv[])
 	Replay replayObserver(speed);
 	coordinator.AddReplayObserver(&replayObserver);
 	coordinator.SetReplayPerspective(0);
+	//coordinator.SetRealtime(true);
 	coordinator.SetMultithreaded(true);
+	coordinator.SetFullScreen(1);	
 	while (true)
 	{
 		bool isDirectory = loadReplayPaths(replayPath, replayFiles);
@@ -244,10 +246,10 @@ int main(int argc, char* argv[])
 				++counter;
 				sc2::SleepFor(500);
 			}
-			if (counter < 10)
-			{
-				pressAltEnter();
-			}
+			//if (counter < 10)
+			//{
+			//	pressAltEnter();
+			//}
 		}
 		while (coordinator.Update() && !coordinator.AllGamesEnded())
 		{
