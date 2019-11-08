@@ -112,9 +112,10 @@ class Replay : public sc2::ReplayObserver
 	CameraModuleObserver m_cameraModule;
 	bool GameEnded;
 	float speed;
+	int delay;
 	std::map < sc2::Tag, bool> alreadySeen;
 
-	Replay(float speed) : sc2::ReplayObserver(), m_cameraModule(this), GameEnded(false), speed(speed)
+	Replay(float speed, int delay) : sc2::ReplayObserver(), m_cameraModule(this), GameEnded(false), speed(speed), delay(delay)
 	{
 	}
 
@@ -166,6 +167,12 @@ class Replay : public sc2::ReplayObserver
 	{
 		GameEnded = true;
 		std::cout << "Game end." << std::endl;
+
+		Timer t;
+		t.start();
+		while (t.getElapsedTimeInMilliSec() < this->delay)
+		{
+		}
 	}
 };
 
@@ -175,7 +182,8 @@ int main(int argc, char* argv[])
 	sc2::ArgParser arg_parser(argv[0]);
 	arg_parser.AddOptions({
 		{ "-p", "--Path", "Path to a single SC2 replay or directory with replay files", true },
-		{ "-s", "--Speed", "Replay speed", false}
+		{ "-s", "--Speed", "Replay speed", false},
+		{ "-d", "--Delay", "Delay after game in ms.", false}
 	});
 	arg_parser.Parse(argc, argv);
 	std::string GamePortStr;
@@ -197,13 +205,26 @@ int main(int argc, char* argv[])
 		speed = 4.0f;
 		std::cout << "Using default speed: 4x" << std::endl;
 	}
+
+	int delay;
+	std::string delayString;
+	if (arg_parser.Get("Delay", delayString))
+	{
+		delay = strtol(delayString.c_str(), nullptr, 10);
+	}
+	else
+	{
+		delay = 3000;
+		std::cout << "Using default delay: 3000ms" << std::endl;
+	}
+
 	std::vector<std::string> replayFiles;
 	int replayIndex = 0;
 	sc2::Coordinator coordinator;
 	if (!coordinator.LoadSettings(argc, argv)) {
 		return 1;
 	}
-	Replay replayObserver(speed);
+	Replay replayObserver(speed, delay);
 	coordinator.AddReplayObserver(&replayObserver);
 	coordinator.SetReplayPerspective(0);
 	//coordinator.SetRealtime(true);
