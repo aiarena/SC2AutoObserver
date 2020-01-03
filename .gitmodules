@@ -1,0 +1,3 @@
+[submodule "cpp-sc2"]
+	path = cpp-sc2
+	url = https://github.com/alkurbatov/cpp-sc2.git

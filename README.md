@@ -77,3 +77,7 @@ void sc2::Observer::OnUnitCreated(const sc2::Unit * unit)
 ```
 
 An example of an command line program that uses the Sc2AutoObserver and plays a replay can be found in the examples directory.
+
+### How to use the observer:
+To build this example the paths of the libs and includes of the sc2api have to be set. After building the executable make the following call in the command console:
+`Observer.exe --Path "<Path to a single SC2 replay or directory with replay files>" --Speed <Replay speed>`
