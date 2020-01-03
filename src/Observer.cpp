@@ -15,12 +15,12 @@ class Replay : public sc2::ReplayObserver
 {
  public:
 	CameraModuleObserver m_cameraModule;
-	bool GameEnded;
-	float speed;
-	int delay;
+	float m_speed;
+	long m_delay;
 	std::map < sc2::Tag, bool> alreadySeen;
 
-	Replay(float speed, int delay) : sc2::ReplayObserver(), m_cameraModule(this), GameEnded(false), speed(speed), delay(delay)
+	Replay(float speed, long delay):
+		sc2::ReplayObserver(), m_cameraModule(this), m_speed(speed), m_delay(delay)
 	{
 	}
 
@@ -40,7 +40,7 @@ class Replay : public sc2::ReplayObserver
 		m_cameraModule.moveCameraUnitCreated(unit);
 	}
 
-	void OnUnitEnterVision(const sc2::Unit* unit) final
+	void OnUnitEnterVision(const sc2::Unit*) final
 	{
 		// Does not get called.
 	}
@@ -63,19 +63,18 @@ class Replay : public sc2::ReplayObserver
 			}
 		}
 		m_cameraModule.onFrame();
-		while (t.getElapsedTimeInMilliSec() < 1000.0 / (22.4*speed))
+		while (t.getElapsedTimeInMilliSec() < 1000.0 / 22.4 * static_cast<double>(m_speed))
 		{
 		}
 	}
 
 	void OnGameEnd() final
 	{
-		GameEnded = true;
 		std::cout << "Game end." << std::endl;
 
 		Timer t;
 		t.start();
-		while (t.getElapsedTimeInMilliSec() < this->delay)
+		while (t.getElapsedTimeInMilliSec() < m_delay)
 		{
 		}
 	}
@@ -111,7 +110,7 @@ int main(int argc, char* argv[])
 		std::cout << "Using default speed: 4x" << std::endl;
 	}
 
-	int delay;
+	long delay;
 	std::string delayString;
 	if (arg_parser.Get("Delay", delayString))
 	{
@@ -124,7 +123,7 @@ int main(int argc, char* argv[])
 	}
 
 	std::vector<std::string> replayFiles;
-	int replayIndex = 0;
+	unsigned long replayIndex = 0;
 	sc2::Coordinator coordinator;
 	if (!coordinator.LoadSettings(argc, argv)) {
 		return 1;
@@ -134,7 +133,7 @@ int main(int argc, char* argv[])
 	coordinator.SetReplayPerspective(0);
 	//coordinator.SetRealtime(true);
 	coordinator.SetMultithreaded(true);
-	coordinator.SetFullScreen(1);	
+	coordinator.SetFullScreen(1);
 	while (true)
 	{
 		bool isDirectory = loadReplayPaths(replayPath, replayFiles);
