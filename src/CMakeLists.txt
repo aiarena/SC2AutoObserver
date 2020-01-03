@@ -7,6 +7,7 @@ target_sources(Observer
         Observer.cpp
         Timer.hpp
         Tools.h
+        ToolsCommon.cpp
         $<$<PLATFORM_ID:Windows>:ToolsWindows.cpp>
         $<$<PLATFORM_ID:Darwin>:ToolsUnix.cpp>
 )

@@ -4,6 +4,6 @@
 #include <vector>
 
 
-bool loadReplayPaths(std::string & name, std::vector<std::string> & v);
+bool loadReplayPaths(const std::string& path, std::vector<std::string>& dst);
 
 void pressDKey();
