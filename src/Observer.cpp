@@ -1,108 +1,15 @@
+#include "CameraModule.h"
+#include "Timer.hpp"
+#include "Tools.h"
+
 #include "sc2api/sc2_api.h"
+#include "sc2api/sc2_gametypes.h"
 #include "sc2utils/sc2_manage_process.h"
 #include "sc2utils/sc2_arg_parser.h"
 
 #include <iostream>
-#include <windows.h>
 #include <vector>
 
-#include "CameraModule.h"
-#include "Timer.hpp"
-#include "sc2api/sc2_gametypes.h"
-
-bool loadReplayPaths(std::string & name, std::vector<std::string> & v)
-{
-	if (name.find("2Replay") != std::string::npos)
-	{
-		v.push_back(name);
-		return false;
-	}
-
-	std::string pattern(name);
-	pattern.append("\\*");
-	WIN32_FIND_DATAA data;
-	HANDLE hFind;
-	if ((hFind = FindFirstFileA(pattern.c_str(), &data)) != INVALID_HANDLE_VALUE)
-	{
-		do
-		{
-			if (data.dwFileAttributes != 16lu)
-			{
-				const std::string fileName = name + "/" + data.cFileName;
-				if (std::find(v.begin(), v.end(), fileName) == v.end())
-				{
-					v.push_back(fileName);
-				}
-			}
-		}
-		while (FindNextFileA(hFind, &data) != 0);
-		FindClose(hFind);
-	}
-	return true;
-}
-
-void pressDKey()
-{
-	auto hwnd = FindWindow(NULL, TEXT("StarCraft II"));
-	if (hwnd != 0)
-	{
-		SetForegroundWindow(hwnd);
-		SetFocus(hwnd);
-		SetActiveWindow(hwnd);
-		INPUT ip;
-		ip.type = INPUT_KEYBOARD;
-		ip.ki.wScan = 0;  // hardware scan code for key
-		ip.ki.time = 0;
-		ip.ki.dwExtraInfo = 0;
-
-		// Press the "D" key
-		ip.ki.wVk = 0x44;  // virtual-key code for the "D" key
-		ip.ki.dwFlags = 0;  // 0 for key press
-		SendInput(1, &ip, sizeof(INPUT));
-
-		// Release the "D" key.
-		ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
-		SendInput(1, &ip, sizeof(INPUT));
-	}
-}
-
-void pressAltEnter()
-{
-	auto hwnd = FindWindow(NULL, TEXT("StarCraft II"));
-	if (hwnd != 0)
-	{
-		SetForegroundWindow(hwnd);
-		SetFocus(hwnd);
-		SetActiveWindow(hwnd);
-		INPUT ip;
-		ip.type = INPUT_KEYBOARD;
-		ip.ki.wScan = 0;  // hardware scan code for key
-		ip.ki.time = 0;
-		ip.ki.dwExtraInfo = 0;
-
-		// Press keys
-		ip.ki.dwFlags = 0;  // 0 for key press
-
-		// Press the "alt" key
-		ip.ki.wVk = 0x12;  // virtual-key code for the "alt" key
-		SendInput(1, &ip, sizeof(INPUT));
-
-		// Press the "enter" key
-		ip.ki.wVk = 0x0D;  // virtual-key code for the "alt" key
-		SendInput(1, &ip, sizeof(INPUT));
-
-		// Release keys
-		ip.ki.dwFlags = KEYEVENTF_KEYUP;  // KEYEVENTF_KEYUP for key release
-
-		// Release the "alt" key
-		ip.ki.wVk = 0x12;
-		SendInput(1, &ip, sizeof(INPUT));
-
-		// Release the "enter" key
-		ip.ki.wVk = 0x0D;
-		SendInput(1, &ip, sizeof(INPUT));
-	}
-}
 
 class Replay : public sc2::ReplayObserver
 {
@@ -238,7 +145,7 @@ int main(int argc, char* argv[])
 			{
 				std::cout << "If you provide a directory please do not end the path with an '\'" << std::endl;
 			}
-			Sleep(30000);
+			sc2::SleepFor(30000);
 			continue;
 		}
 		const std::string replayFile = replayFiles[replayIndex];
@@ -254,22 +161,7 @@ int main(int argc, char* argv[])
 			std::cout << "Please provide the replay path as command line argument." << std::endl;
 			return 1;
 		}
-		if (!FindWindow(NULL, TEXT("StarCraft II")))
-		{
-			// Update once so that the game launches
-			coordinator.Update();
-			// Wait for launch and then Full screen mode
-			int counter = 0;
-			while (!FindWindow(NULL, TEXT("StarCraft II")) && counter < 10)
-			{
-				++counter;
-				sc2::SleepFor(500);
-			}
-			//if (counter < 10)
-			//{
-			//	pressAltEnter();
-			//}
-		}
+		// FIXME(alkurbatov): Launch in fullscreen mode!
 		while (coordinator.Update() && !coordinator.AllGamesEnded())
 		{
 		}

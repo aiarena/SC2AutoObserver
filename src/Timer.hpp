@@ -4,18 +4,20 @@
 #include <thread>
 #include <chrono>
 
-#ifdef WIN32   // Windows system specific
+#ifdef _WIN32   // Windows system specific
 #include <windows.h>
 #else          // Unix based system specific
 #include <sys/time.h>
 #endif
+
+#include <iostream>
 
 class Timer
 {
 	double startTimeInMicroSec;                 // starting time in micro-second
 	double endTimeInMicroSec;                   // ending time in micro-second
 	int    stopped;                             // stop flag 
-#ifdef WIN32
+#ifdef _WIN32
 	LARGE_INTEGER frequency;                    // ticks per second
 	LARGE_INTEGER startCount;                   //
 	LARGE_INTEGER endCount;                     //
@@ -28,7 +30,7 @@ public:
 
 	Timer()
 	{
-#ifdef WIN32
+#ifdef _WIN32
 		QueryPerformanceFrequency(&frequency);
 		startCount.QuadPart = 0;
 		endCount.QuadPart = 0;
@@ -50,7 +52,7 @@ public:
 	{
 		stopped = 0; // reset stop flag
 
-#ifdef WIN32
+#ifdef _WIN32
 		QueryPerformanceCounter(&startCount);
 #else
 		gettimeofday(&startCount, NULL);
@@ -61,7 +63,7 @@ public:
 	{
 		stopped = 1; // set timer stopped flag
 
-#ifdef WIN32
+#ifdef _WIN32
 		QueryPerformanceCounter(&endCount);
 #else
 		gettimeofday(&endCount, NULL);
@@ -70,7 +72,7 @@ public:
 
 	double getElapsedTimeInMicroSec()
 	{
-#ifdef WIN32
+#ifdef _WIN32
 		if (!stopped)
 			QueryPerformanceCounter(&endCount);
 

@@ -1,6 +1,7 @@
 #include "CameraModule.h"
 #include <iostream>
 #include "sc2api/sc2_api.h"
+#include "sc2api/sc2_unit_filters.h"
 #include "sc2api/sc2_proto_interface.h"
 
 // Radius to detect groups of army units
