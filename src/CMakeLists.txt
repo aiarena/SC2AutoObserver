@@ -4,7 +4,7 @@ target_sources(Observer
     PRIVATE
         CameraModule.h
         CameraModule.cpp
-        Observer.cpp
+        main.cpp
         Timer.hpp
         Tools.h
         ToolsCommon.cpp

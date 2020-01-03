@@ -160,7 +160,6 @@ int main(int argc, char* argv[])
 			std::cout << "Please provide the replay path as command line argument." << std::endl;
 			return 1;
 		}
-		// FIXME(alkurbatov): Launch in fullscreen mode!
 		while (coordinator.Update() && !coordinator.AllGamesEnded())
 		{
 		}
