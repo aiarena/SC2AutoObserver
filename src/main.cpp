@@ -90,13 +90,12 @@ int main(int argc, char* argv[])
 		{ "-d", "--Delay", "Delay after game in ms.", false}
 	});
 	arg_parser.Parse(argc, argv);
-	std::string GamePortStr;
 
 	std::string replayPath;
 	if (!arg_parser.Get("Path", replayPath))
 	{
 		std::cout << "Please provide the path to a single SC2 replay or directory with replay files via --Path." << std::endl;
-		return 1;		
+		return 1;
 	}
 	float speed;
 	std::string speedString;
@@ -140,10 +139,6 @@ int main(int argc, char* argv[])
 		if (replayIndex == replayFiles.size())
 		{
 			std::cout << "There are no more replays at " << replayPath << "\\*" << std::endl << "I will wait for 30 seconds and try again." << std::endl;
-			if (replayIndex == 0)
-			{
-				std::cout << "If you provide a directory please do not end the path with an '\'" << std::endl;
-			}
 			sc2::SleepFor(30000);
 			continue;
 		}
