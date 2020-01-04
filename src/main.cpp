@@ -131,7 +131,6 @@ int main(int argc, char* argv[])
 	coordinator.AddReplayObserver(&replayObserver);
 	coordinator.SetReplayPerspective(0);
 	//coordinator.SetRealtime(true);
-	coordinator.SetMultithreaded(true);
 	coordinator.SetFullScreen(1);
 	while (true)
 	{
