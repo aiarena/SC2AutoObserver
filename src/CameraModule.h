@@ -12,12 +12,11 @@ protected:
 	std::vector<int> m_playerIDs;
 	std::map<int, sc2::Point2D> m_startLocations;
 
-
-	int cameraMoveTime;
-	int cameraMoveTimeMin;
+	unsigned int cameraMoveTime;
+	unsigned int cameraMoveTimeMin;
 	uint32_t watchScoutWorkerUntil;
 
-	int lastMoved;
+	unsigned int lastMoved;
 	int lastMovedPriority;
 	sc2::Point2D lastMovedPosition;
 	sc2::Point2D currentCameraPosition;
@@ -55,12 +54,12 @@ protected:
 	virtual void updateCameraPositionExcecute() = 0;
 
 public:
-	CameraModule(sc2::Client * const bot);
+	explicit CameraModule(sc2::Client * const bot);
 	void onStart();
 	void onFrame();
 	void moveCameraUnitCreated(const sc2::Unit * unit);
 
-	~CameraModule();
+	virtual ~CameraModule();
 };
 
 class CameraModuleObserver : public CameraModule

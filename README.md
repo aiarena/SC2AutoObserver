@@ -1,79 +1,67 @@
 # Sc2AutoObserver
 
-* Auto observer that can be used within the sc2api.
-* There are two modes:
-	* within a _game_ to simulate the camera movement of one sc2::Agent.
-	* within a _replay_ to simulate the camera movement of one sc2::ReplayObserver.
-* Inspired by the SSCAIT-ObserverModule found at https://github.com/Plankton555/SSCAIT-ObserverModule
+## About
+Starcraft 2 replays auto observer inspired by the [SSCAIT-ObserverModule](https://github.com/Plankton555/SSCAIT-ObserverModule).
 
-### How to use with sc2::Agent:
+## Build requirements
+1. Download (the password is iagreetotheeula) at least one of the following map packs:
+  * [Ladder 2019 Season 3](http://blzdistsc2-a.akamaihd.net/MapPacks/Ladder2019Season3.zip)
 
-1. Initialize the camera module with a sc2::Agent
-```c++
-CameraModuleAgent cameraModuleAgent(sc2::Agent * const bot);
+2. Put the downloaded maps into the Maps folder (create it if the folder doesn't exist):
+  * Windows: C:\Program Files\StarCraft II\Maps
+  * OS X: /Applications/StarCraft II/Maps
+
+3. Download and install [CMake](https://cmake.org/download/).
+
+4. A compiler with C++17 support.
+
+5. Windows: Download and install [Visual Studio](https://www.visualstudio.com/downloads/)
+
+6. OS X: Install XCode.
+
+## Build instructions
+
+### Windows (Visual Studio)
+```bat
+:: Clone the project.
+$ git clone --recursive git@gitlab.com:aiarena/sc2autoobserver.git
+$ cd sc2autoobserver
+
+:: Create build directory.
+$ mkdir build
+$ cd build
+
+:: Generate VS solution.
+$ cmake ../ -G "Visual Studio 15 2017 Win64"
+
+:: Build the project using Visual Studio.
+$ start Observer.sln
+
+:: Launch the observer.
+$ bin/Observer.exe --Path "<Path to a single SC2 replay or directory with replay files>" --Speed <Replay speed>`
 ```
 
-2. Call the onStart and onFrame functions with the onStart and onStep functions of the agent.
-```c++
-void sc2::Agent::OnGameStart() 
-{
-	...
-	cameraModuleAgent.onStart();
-	...
-}
+### OS X (Xcode)
+```bash
+# Clone the project.
+$ git clone --recursive git@gitlab.com:aiarena/sc2autoobserver.git && cd sc2autoobserve
 
-void sc2::Agent::OnStep() 
-{
-	...
-	cameraModuleAgent.onFrame();
-	...
-}
+# Create build directory.
+$ mkdir build && cd build
+
+# Generate a Makefile.
+# Use 'cmake -DCMAKE_BUILD_TYPE=Debug ../' if debuginfo is needed
+# Debug build also contains additional debug features and chat commands support.
+$ cmake ../ -G Xcode
+
+# Build the project using Xcode.
+$ open Observer.xcodeproj/
+
+# Launch the observer.
+$ ./bin/Observer --Path "<Path to a single SC2 replay or directory with replay files>" --Speed <Replay speed>`
 ```
 
-3. Call the moveCameraUnitCreated function with the onUnitCreate function of the agent.
-```c++
-void sc2::Agent::OnUnitCreated(const sc2::Unit * unit)
-{
-	...
-	cameraModuleAgent.moveCameraUnitCreated(const sc2::Unit * unit)
-	...
-}
-```
+## License
+Copyright (c) 2017 Daniel K�hntopp
 
-An example of an bot that uses the Sc2AutoObserver can be found here: https://github.com/Archiatrus/5minBot A replay showcasing the camera movement can be found in examples. Just select the vision of the Terran player. In case of an unable to open map error, open a game vs AI on Interloper LE in the real game and try again.
-
-### How to use with sc2::ReplayObserver
-
-1. Initialize the camera module with a sc2::ReplayObserver
-```c++
-CameraModuleObserver cameraModuleObserver(sc2::Agent * const bot);
-```
-
-2. Call the onStart and onFrame functions with the onStart and onStep functions of the Observer.
-```c++
-void sc2::Observer::OnGameStart() 
-{
-	...
-	cameraModuleObserver.onStart();
-	...
-}
-
-void sc2::Observer::OnStep() 
-{
-	...
-	cameraModuleObserver.onFrame();
-	...
-}
-```
-
-3. Call the moveCameraUnitCreated function with the onUnitCreate function of the Observer.
-```c++
-void sc2::Observer::OnUnitCreated(const sc2::Unit * unit)
-{
-	...
-	cameraModuleObserver.moveCameraUnitCreated(const sc2::Unit * unit)
-	...
-}
-```
-
-An example of an command line program that uses the Sc2AutoObserver and plays a replay can be found in the examples directory.
+Licensed under the [MIT license](LICENSE).

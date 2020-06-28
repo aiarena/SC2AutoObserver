@@ -1,6 +1,7 @@
 #include "CameraModule.h"
 #include <iostream>
 #include "sc2api/sc2_api.h"
+#include "sc2api/sc2_unit_filters.h"
 #include "sc2api/sc2_proto_interface.h"
 
 // Radius to detect groups of army units
@@ -198,10 +199,6 @@ void CameraModule::moveCameraArmy()
 
 	for (auto & unit : m_client->Observation()->GetUnits())
 	{
-		if (unit->owner == 1)
-		{
-			int a = 1;
-		}
 		if (!isArmyUnitType(unit->unit_type.ToType()) || unit->display_type != sc2::Unit::DisplayType::Visible || !(unit->owner == 1 || unit->owner == 2))
 		{
 			continue;
@@ -256,10 +253,10 @@ void CameraModule::moveCameraUnitCreated(const sc2::Unit * unit)
 
 bool CameraModule::shouldMoveCamera(const int priority) const
 {
-	const int elapsedFrames = m_client->Observation()->GetGameLoop() - lastMoved;
-	const bool isTimeToMove = elapsedFrames >= cameraMoveTime;
-	const bool isTimeToMoveIfHigherPrio = elapsedFrames >= cameraMoveTimeMin;
-	const bool isHigherPrio = lastMovedPriority < priority || (followUnit && !cameraFocusUnit->is_alive);
+	unsigned int elapsedFrames = m_client->Observation()->GetGameLoop() - lastMoved;
+	bool isTimeToMove = elapsedFrames >= cameraMoveTime;
+	bool isTimeToMoveIfHigherPrio = elapsedFrames >= cameraMoveTimeMin;
+	bool isHigherPrio = lastMovedPriority < priority || (followUnit && !cameraFocusUnit->is_alive);
 	// camera should move IF: enough time has passed OR (minimum time has passed AND new prio is higher)
 	return isTimeToMove || (isHigherPrio && isTimeToMoveIfHigherPrio);
 }
@@ -332,7 +329,7 @@ void CameraModule::updateCameraPosition()
 // Utility
 
 //At the moment there is no flag for being under attack
-bool CameraModule::isUnderAttack(const sc2::Unit * unit) const
+bool CameraModule::isUnderAttack(const sc2::Unit *) const
 {
 	return false;
 }
@@ -369,7 +366,7 @@ bool CameraModule::isAttacking(const sc2::Unit * attacker) const
 			rangeGround = weapon.range;
 		}
 	}
-	const int enemyID = getOpponent(attacker->owner);
+	int enemyID = getOpponent(attacker->owner);
 	for (auto & unit : m_client->Observation()->GetUnits())
 	{
 		if (unit->display_type != sc2::Unit::DisplayType::Visible || unit->owner != enemyID || !(attacker->owner == 1 || attacker->owner == 2))
@@ -561,7 +558,7 @@ void CameraModule::setPlayerIds()
 
 int CameraModule::getOpponent(const int player) const
 {
-	for (auto & i : m_playerIDs)
+	for (auto i : m_playerIDs)
 	{
 		if (i != player)
 		{

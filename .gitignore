@@ -1,0 +1,8 @@
+# OS X trash
+.DS_Store
+
+# Build sandbox.
+build
+
+# IDE - VSCode
+.vscode/
