@@ -1,3 +1,4 @@
+#include "ArgParser.h"
 #include "CameraModule.h"
 #include "Timer.hpp"
 #include "Tools.h"
@@ -9,7 +10,6 @@
 
 #include <iostream>
 #include <vector>
-
 
 class Replay : public sc2::ReplayObserver
 {
@@ -83,13 +83,17 @@ class Replay : public sc2::ReplayObserver
 
 int main(int argc, char* argv[])
 {
-	sc2::ArgParser arg_parser(argv[0]);
+	std::vector<char*> observer_options;
+	std::vector<char*> sc2_options;
+	splitInputOptions(argc, argv, &observer_options, &sc2_options);
+
+	sc2::ArgParser arg_parser(observer_options[0]);
 	arg_parser.AddOptions({
 		{ "-p", "--Path", "Path to a single SC2 replay or directory with replay files", true },
 		{ "-s", "--Speed", "Replay speed", false},
 		{ "-d", "--Delay", "Delay after game in ms.", false}
 	});
-	arg_parser.Parse(argc, argv);
+	arg_parser.Parse(static_cast<int>(observer_options.size()), &observer_options[0]);
 
 	std::string replayPath;
 	if (!arg_parser.Get("Path", replayPath))
@@ -124,7 +128,7 @@ int main(int argc, char* argv[])
 	std::vector<std::string> replayFiles;
 	unsigned long replayIndex = 0;
 	sc2::Coordinator coordinator;
-	if (!coordinator.LoadSettings(argc, argv)) {
+	if (!coordinator.LoadSettings(static_cast<int>(sc2_options.size()), &sc2_options[0])) {
 		return 1;
 	}
 	Replay replayObserver(speed, delay);
