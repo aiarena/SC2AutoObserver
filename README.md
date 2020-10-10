@@ -11,9 +11,11 @@ Starcraft 2 replays auto observer inspired by the [SSCAIT-ObserverModule](https:
   * Windows: C:\Program Files\StarCraft II\Maps
   * OS X: /Applications/StarCraft II/Maps
 
-3. Download and install [CMake](https://cmake.org/download/).
+3. Download and install [CMake >= 3.10](https://cmake.org/download/).
 
 4. A compiler with C++17 support.
+
+5. Install [Google test >= 1.10.0](https://github.com/google/googletest)
 
 5. Windows: Download and install [Visual Studio](https://www.visualstudio.com/downloads/)
 
