@@ -11,9 +11,11 @@ Starcraft 2 replays auto observer inspired by the [SSCAIT-ObserverModule](https:
   * Windows: C:\Program Files\StarCraft II\Maps
   * OS X: /Applications/StarCraft II/Maps
 
-3. Download and install [CMake](https://cmake.org/download/).
+3. Download and install [CMake >= 3.10](https://cmake.org/download/).
 
 4. A compiler with C++17 support.
+
+5. Install [Google test >= 1.10.0](https://github.com/google/googletest)
 
 5. Windows: Download and install [Visual Studio](https://www.visualstudio.com/downloads/)
 
@@ -59,6 +61,17 @@ $ open Observer.xcodeproj/
 
 # Launch the observer.
 $ ./bin/Observer --Path "<Path to a single SC2 replay or directory with replay files>" --Speed <Replay speed>`
+```
+
+## Load replays from an older SC2 versions
+To load replays from older an older SC2 version, one should additionally specify game version hash and path to the older SC2 executable, e.g. for 4.10 version:
+### Windows
+```bat
+$ bin/Observer.exe --Path "C:\Users\lladdy\Documents\358809_TyrZ_DoogieHowitzer_IceandChromeLE.SC2Replay" -- -d "B89B5D6FA7CBF6452E721311BFBC6CB2" -e "D:\Battle.net\StarCraft II\Versions\Base75689\SC2.exe"
+```
+### OS X
+```bash
+$ ./bin/Observer --Path "/Users/alkurbatov/Downloads/358809_TyrZ_DoogieHowitzer_IceandChromeLE.SC2Replay" -- -d "B89B5D6FA7CBF6452E721311BFBC6CB2" -e "/Applications/StarCraft II/Versions/Base75689/SC2.app/Contents/MacOS/SC2"
 ```
 
 ## License

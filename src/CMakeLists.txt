@@ -2,6 +2,8 @@ add_executable(Observer)
 
 target_sources(Observer
     PRIVATE
+        ArgParser.h
+        ArgParser.cpp
         CameraModule.h
         CameraModule.cpp
         main.cpp

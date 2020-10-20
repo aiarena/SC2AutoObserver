@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 project(Observer)
 
@@ -15,5 +15,10 @@ set(BUILD_API_EXAMPLES OFF CACHE INTERNAL "" FORCE)
 # Disable building of tests in the cpp-sc2 submodule.
 set(BUILD_API_TESTS OFF CACHE INTERNAL "" FORCE)
 
+# Search for Google test suite.
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
 add_subdirectory("cpp-sc2")
 add_subdirectory("src")
+add_subdirectory("test")
