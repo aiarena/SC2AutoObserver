@@ -2,6 +2,7 @@
 
 ## About
 Starcraft 2 replays auto observer inspired by the [SSCAIT-ObserverModule](https://github.com/Plankton555/SSCAIT-ObserverModule).
+The Sc2AutoObserver is used to view replays on the [SC2 AI Arena 24/7 livestream](https://www.twitch.tv/aiarenastream)
 
 ## Build requirements
 1. Download (the password is iagreetotheeula) at least one of the following map packs:
