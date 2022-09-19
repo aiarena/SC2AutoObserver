@@ -19,6 +19,14 @@ set(BUILD_API_TESTS OFF CACHE INTERNAL "" FORCE)
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
+if (MSVC)
+    # Setup MSVC parallelized builds.
+    add_compile_options(/MP)
+
+    # Use statically linked runtime.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
+endif ()
+
 add_subdirectory("cpp-sc2")
 add_subdirectory("src")
 add_subdirectory("test")
