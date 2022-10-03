@@ -6,3 +6,6 @@ build
 
 # IDE - VSCode
 .vscode/
+
+# Clangd cache
+.cache/

@@ -17,10 +17,13 @@ class Replay : public sc2::ReplayObserver
 	CameraModuleObserver m_cameraModule;
 	float m_speed;
 	long m_delay;
+	bool m_toggle_production_tab;
 	std::map < sc2::Tag, bool> alreadySeen;
 
-	Replay(float speed, long delay):
-		sc2::ReplayObserver(), m_cameraModule(this), m_speed(speed), m_delay(delay)
+	Replay(float speed, long delay, bool toggle_production_tab):
+		sc2::ReplayObserver(), m_cameraModule(this),
+		m_speed(speed), m_delay(delay),
+		m_toggle_production_tab(toggle_production_tab)
 	{
 	}
 
@@ -33,6 +36,9 @@ class Replay : public sc2::ReplayObserver
 		}
 		*/
 		m_cameraModule.onStart();
+
+		if (m_toggle_production_tab)
+			pressDKey();
 	}
 
 	void OnUnitCreated(const sc2::Unit* unit) final
@@ -47,13 +53,9 @@ class Replay : public sc2::ReplayObserver
 
 	void OnStep() final
 	{
-		if (Observation()->GetGameLoop() == 10)
-		{
-			pressDKey();
-		}
 		Timer t;
 		t.start();
-		Observation()->GetChatMessages();		
+		Observation()->GetChatMessages();
 		for (const auto & unit : Observation()->GetUnits())
 		{
 			if (!alreadySeen[unit->tag])
@@ -91,7 +93,8 @@ int main(int argc, char* argv[])
 	arg_parser.AddOptions({
 		{ "-p", "--Path", "Path to a single SC2 replay or directory with replay files", true },
 		{ "-s", "--Speed", "Replay speed", false},
-		{ "-d", "--Delay", "Delay after game in ms.", false}
+		{ "-d", "--Delay", "Delay after game in ms.", false},
+		{ "-t", "--Toggle", "Toggle the Production tab on game start (Windows only).", false},
 	});
 	arg_parser.Parse(static_cast<int>(observer_options.size()), &observer_options[0]);
 
@@ -125,13 +128,16 @@ int main(int argc, char* argv[])
 		std::cout << "Using default delay: 3000ms" << std::endl;
 	}
 
+	std::string dummy;
+	bool toggle_production_tab = arg_parser.Get("Toggle", dummy);
+
 	std::vector<std::string> replayFiles;
 	unsigned long replayIndex = 0;
 	sc2::Coordinator coordinator;
 	if (!coordinator.LoadSettings(static_cast<int>(sc2_options.size()), &sc2_options[0])) {
 		return 1;
 	}
-	Replay replayObserver(speed, delay);
+	Replay replayObserver(speed, delay, toggle_production_tab);
 	coordinator.AddReplayObserver(&replayObserver);
 	coordinator.SetReplayPerspective(0);
 	//coordinator.SetRealtime(true);
